@@ -1,0 +1,17 @@
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Aplication\bin\Debug\net8.0\BibliotecaApp.Aplication.deps.json
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Aplication\bin\Debug\net8.0\BibliotecaApp.Aplication.dll
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Aplication\bin\Debug\net8.0\BibliotecaApp.Aplication.pdb
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Aplication\bin\Debug\net8.0\BibliotecaApp.Domain.dll
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Aplication\bin\Debug\net8.0\BibliotecaApp.Infra.Data.dll
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Aplication\bin\Debug\net8.0\BibliotecaApp.Domain.pdb
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Aplication\bin\Debug\net8.0\BibliotecaApp.Infra.Data.pdb
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Aplication\obj\Debug\net8.0\BibliotecaApp.Aplication.csproj.AssemblyReference.cache
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Aplication\obj\Debug\net8.0\BibliotecaApp.Aplication.GeneratedMSBuildEditorConfig.editorconfig
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Aplication\obj\Debug\net8.0\BibliotecaApp.Aplication.AssemblyInfoInputs.cache
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Aplication\obj\Debug\net8.0\BibliotecaApp.Aplication.AssemblyInfo.cs
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Aplication\obj\Debug\net8.0\BibliotecaApp.Aplication.csproj.CoreCompileInputs.cache
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Aplication\obj\Debug\net8.0\Bibliote.658F7AFD.Up2Date
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Aplication\obj\Debug\net8.0\BibliotecaApp.Aplication.dll
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Aplication\obj\Debug\net8.0\refint\BibliotecaApp.Aplication.dll
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Aplication\obj\Debug\net8.0\BibliotecaApp.Aplication.pdb
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Aplication\obj\Debug\net8.0\ref\BibliotecaApp.Aplication.dll

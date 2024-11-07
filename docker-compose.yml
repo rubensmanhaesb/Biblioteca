@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  bibliotecasqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: bibliotecasqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Rubens2024!
+    ports:
+      - "1433:1433"
+    volumes:
+      - bibliotecasqlserver_data:/var/opt/mssql
+    networks:
+      - mynetwork
+
+
+
+
+volumes:
+  bibliotecasqlserver_data:
+  
+
+networks:
+  mynetwork:
+    driver: bridge

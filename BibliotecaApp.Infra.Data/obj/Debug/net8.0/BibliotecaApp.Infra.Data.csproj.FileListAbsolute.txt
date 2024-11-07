@@ -1,0 +1,17 @@
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data\obj\Debug\net8.0\BibliotecaApp.Infra.Data.csproj.AssemblyReference.cache
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data\obj\Debug\net8.0\BibliotecaApp.Infra.Data.GeneratedMSBuildEditorConfig.editorconfig
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data\obj\Debug\net8.0\BibliotecaApp.Infra.Data.AssemblyInfoInputs.cache
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data\obj\Debug\net8.0\BibliotecaApp.Infra.Data.AssemblyInfo.cs
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data\obj\Debug\net8.0\BibliotecaApp.Infra.Data.csproj.CoreCompileInputs.cache
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data\bin\Debug\net8.0\BibliotecaApp.Infra.Data.deps.json
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data\bin\Debug\net8.0\BibliotecaApp.Infra.Data.runtimeconfig.json
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data\bin\Debug\net8.0\BibliotecaApp.Infra.Data.dll
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data\bin\Debug\net8.0\BibliotecaApp.Infra.Data.pdb
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data\bin\Debug\net8.0\BibliotecaApp.Domain.dll
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data\bin\Debug\net8.0\BibliotecaApp.Domain.pdb
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data\obj\Debug\net8.0\Bibliote.2C27FE97.Up2Date
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data\obj\Debug\net8.0\BibliotecaApp.Infra.Data.dll
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data\obj\Debug\net8.0\refint\BibliotecaApp.Infra.Data.dll
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data\obj\Debug\net8.0\BibliotecaApp.Infra.Data.pdb
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data\obj\Debug\net8.0\BibliotecaApp.Infra.Data.genruntimeconfig.cache
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data\obj\Debug\net8.0\ref\BibliotecaApp.Infra.Data.dll
