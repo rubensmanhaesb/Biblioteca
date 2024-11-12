@@ -13,6 +13,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 using ValidationException = FluentValidation.ValidationException;
+using BibliotecaApp.Aplication.Dtos;
+using BibliotecaApp.Domain.Interfaces.Services;
 
 namespace BibliotecaAPP.IntegrationTest
 {
@@ -38,7 +40,7 @@ namespace BibliotecaAPP.IntegrationTest
         private Livro GenerateValidLivro()
         {
             return new Faker<Livro>("pt_BR")
-                .RuleFor(l => l.Codl, f => f.Random.Int(1, 10000))
+                //.RuleFor(l => l.Codl, f => f.Random.Int(1, 10000)) // é identity não deve ser gerado
                 .RuleFor(l => l.Titulo, f => f.Company.CompanyName())
                 .RuleFor(l => l.Editora, f => f.Company.CompanyName())
                 .RuleFor(l => l.Edicao, f => f.Random.Int(1, 10))
@@ -49,9 +51,7 @@ namespace BibliotecaAPP.IntegrationTest
         [Fact(DisplayName = "Adicionar Livro com sucesso")]
         public async Task AddAsync_ShouldAddLivro_WhenValid()
         {
-
             var newLivro = GenerateValidLivro();
-            newLivro.Codl = 0; 
 
             var result = await _livroDomainService.AddAsync(newLivro);
 
@@ -60,18 +60,76 @@ namespace BibliotecaAPP.IntegrationTest
             result.Editora.Should().Be(newLivro.Editora);
         }
 
-        [Fact(DisplayName = "Adicionar Livro deve falhar na validação")]
-        public async Task AddAsync_ShouldThrowValidationException_WhenInvalid()
+        [Fact(DisplayName = "Adicionar Livro deve falhar quando informado o codL")]
+        public async Task AddAsync_ShouldThrowValidationException_WhenVodeAuIsNotEmpty()
         {
+            var newAutor = GenerateValidLivro();
+            newAutor.Codl = 1; // Campo obrigatório estar vazio
 
-            var livro = new Livro { Titulo = "" }; 
+            Func<Task> act = async () => await _livroDomainService.AddAsync(newAutor);
 
+            var exception = await act.Should().ThrowAsync<ValidationException>();
+            exception.Which.Errors.Should().Contain(e => e.ErrorMessage.Contains("Código do livro não deve ser informado na inclusão."));
+        }
 
-            Func<Task> act = async () => await _livroDomainService.AddAsync(livro);
+        [Fact(DisplayName = "Adicionar Livro deve falhar quando título estiver vazio")]
+        public async Task AddAsync_ShouldThrowValidationException_WhenTituloIsEmpty()
+        {
+            var newLivro = GenerateValidLivro();
+            newLivro.Titulo = ""; // Campo obrigatório
 
+            Func<Task> act = async () => await _livroDomainService.AddAsync(newLivro);
 
             var exception = await act.Should().ThrowAsync<ValidationException>();
             exception.Which.Errors.Should().Contain(e => e.ErrorMessage.Contains("O título do livro é obrigatório."));
+        }
+
+        [Fact(DisplayName = "Adicionar Livro deve falhar quando editora estiver vazia")]
+        public async Task AddAsync_ShouldThrowValidationException_WhenEditoraIsEmpty()
+        {
+            var newLivro = GenerateValidLivro();
+            newLivro.Editora = ""; // Campo obrigatório
+
+            Func<Task> act = async () => await _livroDomainService.AddAsync(newLivro);
+
+            var exception = await act.Should().ThrowAsync<ValidationException>();
+            exception.Which.Errors.Should().Contain(e => e.ErrorMessage.Contains("A Editora do livro é obrigatória."));
+        }
+
+        [Fact(DisplayName = "Adicionar Livro deve falhar quando edição for zero ou negativa")]
+        public async Task AddAsync_ShouldThrowValidationException_WhenEdicaoIsInvalid()
+        {
+            var newLivro = GenerateValidLivro();
+            newLivro.Edicao = 0; // Valor inválido
+
+            Func<Task> act = async () => await _livroDomainService.AddAsync(newLivro);
+
+            var exception = await act.Should().ThrowAsync<ValidationException>();
+            exception.Which.Errors.Should().Contain(e => e.ErrorMessage.Contains("A Edição não pode ser zero ou negativa."));
+        }
+
+        [Fact(DisplayName = "Adicionar Livro deve falhar quando ano de publicação estiver vazio")]
+        public async Task AddAsync_ShouldThrowValidationException_WhenAnoPublicacaoIsEmpty()
+        {
+            var newLivro = GenerateValidLivro();
+            newLivro.AnoPublicacao = ""; // Campo obrigatório
+
+            Func<Task> act = async () => await _livroDomainService.AddAsync(newLivro);
+
+            var exception = await act.Should().ThrowAsync<ValidationException>();
+            exception.Which.Errors.Should().Contain(e => e.ErrorMessage.Contains("A Publicação do livro é obrigatória."));
+        }
+
+        [Fact(DisplayName = "Adicionar Livro deve falhar quando ano de publicação tiver tamanho incorreto")]
+        public async Task AddAsync_ShouldThrowValidationException_WhenAnoPublicacaoIsIncorrectLength()
+        {
+            var newLivro = GenerateValidLivro();
+            newLivro.AnoPublicacao = "123"; // Tamanho inválido
+
+            Func<Task> act = async () => await _livroDomainService.AddAsync(newLivro);
+
+            var exception = await act.Should().ThrowAsync<ValidationException>();
+            exception.Which.Errors.Should().Contain(e => e.ErrorMessage.Contains("A Publicação deve ter exatamente 4 caracteres."));
         }
 
         [Fact(DisplayName = "Atualizar livro com sucesso")]
@@ -79,9 +137,8 @@ namespace BibliotecaAPP.IntegrationTest
         {
 
             var livro = GenerateValidLivro();
-            livro.Codl = 0; 
-            var addedLivro = await _livroDomainService.AddAsync(livro);
 
+            var addedLivro = await _livroDomainService.AddAsync(livro);
 
             addedLivro.Titulo = "Titulo Alterado";
             addedLivro.Edicao = new Random().Next(1, 10);
@@ -96,22 +153,90 @@ namespace BibliotecaAPP.IntegrationTest
             result.Titulo.Should().Be("Titulo Alterado");
             result.Editora.Should().Be("Editora Alterada");
         }
-
-        [Fact(DisplayName = "Atualizar livro deve falhar na validação")]
-        public async Task UpdateAsync_ShouldThrowValidationException_WhenInvalid()
+        [Fact(DisplayName = "Atualizar livro deve falhar quando livro não encontrado")]
+        public async Task UpdateAsync_ShouldThrowLivroNotFoundException_WhenLivroNotFound()
         {
 
             var livro = GenerateValidLivro();
-            livro.Codl = 0;
-            await _livroDomainService.AddAsync(livro);
-            livro.Titulo = ""; 
-
+            livro.Codl = new Random().Next(1, 10000);
 
             Func<Task> act = async () => await _livroDomainService.UpdateAsync(livro);
 
 
+            await act.Should().ThrowAsync<NotFoundExceptionLivro>()
+                .WithMessage($"Livro {livro.Codl} não encontrado.");
+        }
+
+
+
+        [Fact(DisplayName = "Atualizar Livro deve falhar quando título estiver vazio")]
+        public async Task UpdateAsync_ShouldThrowValidationException_WhenTituloIsEmpty()
+        {
+            var livro = GenerateValidLivro();
+            var addedLivro = await _livroDomainService.AddAsync(livro);
+
+            addedLivro.Titulo = ""; // Campo obrigatório inválido
+
+            Func<Task> act = async () => await _livroDomainService.UpdateAsync(addedLivro);
+
             var exception = await act.Should().ThrowAsync<ValidationException>();
             exception.Which.Errors.Should().Contain(e => e.ErrorMessage.Contains("O título do livro é obrigatório."));
+        }
+
+        [Fact(DisplayName = "Atualizar Livro deve falhar quando editora estiver vazia")]
+        public async Task UpdateAsync_ShouldThrowValidationException_WhenEditoraIsEmpty()
+        {
+            var livro = GenerateValidLivro();
+            var addedLivro = await _livroDomainService.AddAsync(livro);
+
+            addedLivro.Editora = ""; // Campo obrigatório inválido
+
+            Func<Task> act = async () => await _livroDomainService.UpdateAsync(addedLivro);
+
+            var exception = await act.Should().ThrowAsync<ValidationException>();
+            exception.Which.Errors.Should().Contain(e => e.ErrorMessage.Contains("A Editora do livro é obrigatória."));
+        }
+
+        [Fact(DisplayName = "Atualizar Livro deve falhar quando edição for zero ou negativa")]
+        public async Task UpdateAsync_ShouldThrowValidationException_WhenEdicaoIsInvalid()
+        {
+            var livro = GenerateValidLivro();
+            var addedLivro = await _livroDomainService.AddAsync(livro);
+
+            addedLivro.Edicao = 0; // Valor inválido
+
+            Func<Task> act = async () => await _livroDomainService.UpdateAsync(addedLivro);
+
+            var exception = await act.Should().ThrowAsync<ValidationException>();
+            exception.Which.Errors.Should().Contain(e => e.ErrorMessage.Contains("A Edição não pode ser zero ou negativa."));
+        }
+
+        [Fact(DisplayName = "Atualizar Livro deve falhar quando ano de publicação estiver vazio")]
+        public async Task UpdateAsync_ShouldThrowValidationException_WhenAnoPublicacaoIsEmpty()
+        {
+            var livro = GenerateValidLivro();
+            var addedLivro = await _livroDomainService.AddAsync(livro);
+
+            addedLivro.AnoPublicacao = ""; // Campo obrigatório inválido
+
+            Func<Task> act = async () => await _livroDomainService.UpdateAsync(addedLivro);
+
+            var exception = await act.Should().ThrowAsync<ValidationException>();
+            exception.Which.Errors.Should().Contain(e => e.ErrorMessage.Contains("A Publicação do livro é obrigatória."));
+        }
+
+        [Fact(DisplayName = "Atualizar Livro deve falhar quando ano de publicação tiver tamanho incorreto")]
+        public async Task UpdateAsync_ShouldThrowValidationException_WhenAnoPublicacaoIsIncorrectLength()
+        {
+            var livro = GenerateValidLivro();
+            var addedLivro = await _livroDomainService.AddAsync(livro);
+
+            addedLivro.AnoPublicacao = "123"; // Tamanho inválido
+
+            Func<Task> act = async () => await _livroDomainService.UpdateAsync(addedLivro);
+
+            var exception = await act.Should().ThrowAsync<ValidationException>();
+            exception.Which.Errors.Should().Contain(e => e.ErrorMessage.Contains("A Publicação deve ter exatamente 4 caracteres."));
         }
 
         [Fact(DisplayName = "Excluir livro deve falhar quando livro não encontrado")]
@@ -128,28 +253,26 @@ namespace BibliotecaAPP.IntegrationTest
                 .WithMessage($"Livro {livro.Codl} não encontrado.");
         }
 
-        [Fact(DisplayName = "Excluir livro com sucesso")]
-        public async Task DeleteAsync_ShouldDeleteLivro_WhenLivroExists()
+        [Fact(DisplayName = "Exclui de Livro com sucesso")]
+        public async Task DeleteAsync_ShouldDeletePrecoLivro_WhenPrecoLivroExists()
         {
-
+            // Arrange: Adiciona um registro válido
             var livro = GenerateValidLivro();
-            livro.Codl = 0; 
-            var addedLivro = await _livroDomainService.AddAsync(livro);
+            await _livroDomainService.AddAsync(livro);
 
+            // Act: Exclui o registro recém-adicionado
+            var result = await _livroDomainService.DeleteAsync(livro);
 
-            var result = await _livroDomainService.DeleteAsync(addedLivro);
-
-
+            // Assert: Verifica se o registro foi excluído corretamente
             result.Should().NotBeNull();
-            result.Codl.Should().Be(addedLivro.Codl);
+            result.Should().BeEquivalentTo(livro);
         }
 
         [Fact(DisplayName = "Consultar Livro por ID deve retornar livro existente")]
         public async Task GetByIdAsync_ShouldReturnLivro_WhenLivroExists()
         {
-
             var livro = GenerateValidLivro();
-            livro.Codl = 0; 
+
             var addedLivro = await _livroDomainService.AddAsync(livro);
 
 
@@ -176,6 +299,10 @@ namespace BibliotecaAPP.IntegrationTest
         [Fact(DisplayName = "Consultar todos os livros")]
         public async Task GetManyAsync_ShouldReturnLivros_WhenLivrosExist()
         {
+            var livro1 = GenerateValidLivro();
+
+            var addedLivro = await _livroDomainService.AddAsync(livro1);
+
 
             await AddAsync_ShouldAddLivro_WhenValid(); 
 
@@ -184,7 +311,7 @@ namespace BibliotecaAPP.IntegrationTest
 
 
             result.Should().NotBeNull();
-            result.Count().Should().BeGreaterThan(0);
+            result.Count().Should().BeGreaterThanOrEqualTo(1);
         }
     }
 }

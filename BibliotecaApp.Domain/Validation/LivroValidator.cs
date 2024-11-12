@@ -16,33 +16,23 @@ namespace BibliotecaApp.Domain.Validation
 
         private void ConfigureRules(TipoOperacao tipoOperacao)
         {
-            if (tipoOperacao == TipoOperacao.Inclusao || tipoOperacao == TipoOperacao.Alteracao)
-            {
-                ConfigureGeneralRules();
-            }
 
-
-            switch (tipoOperacao)
-            {
-                case TipoOperacao.Inclusao:
+            if (tipoOperacao == TipoOperacao.Inclusao)
                     RuleFor(x => x.Codl)
                         .Equal(0).WithMessage("Código do livro não deve ser informado na inclusão.");
-                    break;
 
-                case TipoOperacao.Alteracao:
-                    RuleFor(x => x.Codl)
-                        .GreaterThan(0).WithMessage("Código do livro deve ser informado na alteração.");
-                    break;
+            if (tipoOperacao == TipoOperacao.Inclusao || tipoOperacao == TipoOperacao.Alteracao)
+                ConfigureGeneralRules();
 
-                case TipoOperacao.Delecao:
-                    RuleFor(x => x.Codl)
-                        .GreaterThan(0).WithMessage("Código do livro deve ser informado na exclusão.");
-                    break;
-            }
+            if (tipoOperacao == TipoOperacao.Delecao || tipoOperacao == TipoOperacao.Alteracao)
+                RuleFor(x => x.Codl)
+                .NotEmpty().WithMessage("O código livro é obrigatório.")
+                .GreaterThan(0).WithMessage("O do livro deve ser maior que zero.");
         }
 
         private void ConfigureGeneralRules()
         {
+
             RuleFor(x => x.Titulo)
                 .NotEmpty().WithMessage("O título do livro é obrigatório.")
                 .MaximumLength(40).WithMessage("O título deve ter no máximo 40 caracteres");

@@ -15,3 +15,4 @@ F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Aplication\obj\Debug\net8.0\Bibliote
 F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Aplication\obj\Debug\net8.0\refint\BibliotecaApp.Aplication.dll
 F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Aplication\obj\Debug\net8.0\BibliotecaApp.Aplication.pdb
 F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Aplication\obj\Debug\net8.0\ref\BibliotecaApp.Aplication.dll
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Aplication\obj\Debug\net8.0\BibliotecaApp.Aplication.sourcelink.json

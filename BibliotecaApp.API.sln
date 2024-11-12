@@ -32,7 +32,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{2C9E7453-E
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{C43E7F8C-0CF0-41B2-97CA-E08F9ADD3C66}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BibliotecaApp.Application.Tests", "BibliotecaApp.Application.Tests\BibliotecaApp.Application.Tests.csproj", "{D723CDBB-764B-44E8-9F42-30F9BFA5AD33}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BibliotecaApp.Application.Tests", "BibliotecaApp.Application.Tests\BibliotecaApp.Application.Tests.csproj", "{D723CDBB-764B-44E8-9F42-30F9BFA5AD33}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BibliotecaApp.Infra.Data.Test", "BibliotecaApp.Infra.Data.Test\BibliotecaApp.Infra.Data.Test.csproj", "{17B1574F-B30E-426F-BA49-ECC200A90C7A}"
 EndProject

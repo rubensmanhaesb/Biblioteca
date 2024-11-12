@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BibliotecaAPP.IntegrationTest")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+05b96630050205c6d823f15715a78c2fab2d38d0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+17d4d9a6aebf98ad8183bdd48184faf2a49365d9")]
 [assembly: System.Reflection.AssemblyProductAttribute("BibliotecaAPP.IntegrationTest")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BibliotecaAPP.IntegrationTest")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

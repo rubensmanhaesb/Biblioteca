@@ -32,6 +32,15 @@ namespace BibliotecaApp.Domain.Services
             var validationResult = await validator.ValidateAsync(entity);
             if (!validationResult.IsValid)
                 throw new ValidationException(validationResult.Errors);
+
+        }
+        private async Task<PrecoLivro>? EnsureEntityExistsAsync(PrecoLivro entity)
+        {
+            var precoLivro = await _precoLivroRepository.GetById(entity.Codp);
+            if (precoLivro == null)
+                throw new NotFoundExceptionPrecoLivro(entity.Codp);
+            
+            return precoLivro;
         }
 
         public async override Task<PrecoLivro> AddAsync(PrecoLivro entity)
@@ -50,7 +59,9 @@ namespace BibliotecaApp.Domain.Services
 
         public async override Task<PrecoLivro> UpdateAsync(PrecoLivro entity)
         {
-            await ValidateAndThrowAsync(TipoOperacao.Inclusao, entity);
+            await ValidateAndThrowAsync(TipoOperacao.Alteracao, entity);
+
+            await EnsureEntityExistsAsync(entity);
 
             await _unitOfWork.PrecoLivroRepository!.Update(entity);
             await _unitOfWork.SaveChanges();
@@ -59,15 +70,15 @@ namespace BibliotecaApp.Domain.Services
 
         public async override Task<PrecoLivro> DeleteAsync(PrecoLivro entity)
         {
-            var precoLivro = await _precoLivroRepository.GetById(entity.Codp);
-            if (precoLivro == null)
-                throw new NotFoundExceptionPrecoLivro(entity.Codp);
+            await ValidateAndThrowAsync(TipoOperacao.Delecao, entity);
+            
+            var precoLivro = await EnsureEntityExistsAsync(entity);
 
             await _unitOfWork.PrecoLivroRepository!.Delete(precoLivro);
             await _unitOfWork.SaveChanges();
+
             return precoLivro;
         }
-
 
         public async Task<IEnumerable<PrecoLivro?>> GetByConditionAsync(int? pageSize = null, int? pageNumber = null, Expression<Func<PrecoLivro, bool>> predicate = null, Expression<Func<PrecoLivro, object>>[] orderBy = null, bool isAscending = true, Expression<Func<PrecoLivro, object>>[] includes = null, CancellationToken cancellationToken = default)
         {

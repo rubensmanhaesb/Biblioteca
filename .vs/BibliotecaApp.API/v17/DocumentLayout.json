@@ -3,12 +3,16 @@
   "WorkspaceRootPath": "F:\\Projetos_CSharp\\Biblioteca\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{B59C03AC-358F-49FF-898D-BBE59DA022A0}|BibliotecaApp.API\\BibliotecaApp.API.csproj|f:\\projetos_csharp\\biblioteca\\bibliotecaapp.api\\controllers\\precolivrocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{B59C03AC-358F-49FF-898D-BBE59DA022A0}|BibliotecaApp.API\\BibliotecaApp.API.csproj|solutionrelative:bibliotecaapp.api\\controllers\\precolivrocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{B59C03AC-358F-49FF-898D-BBE59DA022A0}|BibliotecaApp.API\\BibliotecaApp.API.csproj|f:\\projetos_csharp\\biblioteca\\bibliotecaapp.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B59C03AC-358F-49FF-898D-BBE59DA022A0}|BibliotecaApp.API\\BibliotecaApp.API.csproj|solutionrelative:bibliotecaapp.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{DA9826D1-CE80-4D14-8F12-351069744E82}|BibliotecaApp.Aplication\\BibliotecaApp.Aplication.csproj|f:\\projetos_csharp\\biblioteca\\bibliotecaapp.aplication\\services\\precolivroappservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{DA9826D1-CE80-4D14-8F12-351069744E82}|BibliotecaApp.Aplication\\BibliotecaApp.Aplication.csproj|solutionrelative:bibliotecaapp.aplication\\services\\precolivroappservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{8E1EDE08-BB54-4156-BB6D-BBB854100E8D}|BibliotecaApp.Infra.Data\\BibliotecaApp.Infra.Data.csproj|f:\\projetos_csharp\\biblioteca\\bibliotecaapp.infra.data\\context\\datacontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E1EDE08-BB54-4156-BB6D-BBB854100E8D}|BibliotecaApp.Infra.Data\\BibliotecaApp.Infra.Data.csproj|solutionrelative:bibliotecaapp.infra.data\\context\\datacontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{17B1574F-B30E-426F-BA49-ECC200A90C7A}|BibliotecaApp.Infra.Data.Test\\BibliotecaApp.Infra.Data.Test.csproj|f:\\projetos_csharp\\biblioteca\\bibliotecaapp.infra.data.test\\assuntorepositorytest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{17B1574F-B30E-426F-BA49-ECC200A90C7A}|BibliotecaApp.Infra.Data.Test\\BibliotecaApp.Infra.Data.Test.csproj|solutionrelative:bibliotecaapp.infra.data.test\\assuntorepositorytest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -18,7 +22,7 @@
       "DocumentGroups": [
         {
           "DockedHeight": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Bookmark",
@@ -38,28 +42,41 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "PrecoLivroAppService.cs",
-              "DocumentMoniker": "F:\\Projetos_CSharp\\Biblioteca\\BibliotecaApp.Aplication\\Services\\PrecoLivroAppService.cs",
-              "RelativeDocumentMoniker": "BibliotecaApp.Aplication\\Services\\PrecoLivroAppService.cs",
-              "ToolTip": "F:\\Projetos_CSharp\\Biblioteca\\BibliotecaApp.Aplication\\Services\\PrecoLivroAppService.cs",
-              "RelativeToolTip": "BibliotecaApp.Aplication\\Services\\PrecoLivroAppService.cs",
-              "ViewState": "AgIAAC8AAAAAAAAAAAAxwDoAAAAdAAAAAAAAAA==",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "F:\\Projetos_CSharp\\Biblioteca\\BibliotecaApp.API\\Program.cs",
+              "RelativeDocumentMoniker": "BibliotecaApp.API\\Program.cs",
+              "ToolTip": "F:\\Projetos_CSharp\\Biblioteca\\BibliotecaApp.API\\Program.cs",
+              "RelativeToolTip": "BibliotecaApp.API\\Program.cs",
+              "ViewState": "AgIAACQAAAAAAAAAAAAAAC0AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-11-07T03:07:28.118Z",
+              "WhenOpened": "2024-11-12T01:18:03.543Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "PrecoLivroController.cs",
-              "DocumentMoniker": "F:\\Projetos_CSharp\\Biblioteca\\BibliotecaApp.API\\Controllers\\PrecoLivroController.cs",
-              "RelativeDocumentMoniker": "BibliotecaApp.API\\Controllers\\PrecoLivroController.cs",
-              "ToolTip": "F:\\Projetos_CSharp\\Biblioteca\\BibliotecaApp.API\\Controllers\\PrecoLivroController.cs",
-              "RelativeToolTip": "BibliotecaApp.API\\Controllers\\PrecoLivroController.cs",
-              "ViewState": "AgIAACoAAAAAAAAAAAAxwDYAAAAoAAAAAAAAAA==",
+              "DocumentIndex": 2,
+              "Title": "AssuntoRepositoryTest.cs",
+              "DocumentMoniker": "F:\\Projetos_CSharp\\Biblioteca\\BibliotecaApp.Infra.Data.Test\\AssuntoRepositoryTest.cs",
+              "RelativeDocumentMoniker": "BibliotecaApp.Infra.Data.Test\\AssuntoRepositoryTest.cs",
+              "ToolTip": "F:\\Projetos_CSharp\\Biblioteca\\BibliotecaApp.Infra.Data.Test\\AssuntoRepositoryTest.cs",
+              "RelativeToolTip": "BibliotecaApp.Infra.Data.Test\\AssuntoRepositoryTest.cs",
+              "ViewState": "AgIAAAwAAAAAAAAAAIAywBgAAAAbAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-11-07T03:05:38.157Z",
+              "WhenOpened": "2024-11-12T01:15:36.837Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "DataContext.cs",
+              "DocumentMoniker": "F:\\Projetos_CSharp\\Biblioteca\\BibliotecaApp.Infra.Data\\Context\\DataContext.cs",
+              "RelativeDocumentMoniker": "BibliotecaApp.Infra.Data\\Context\\DataContext.cs",
+              "ToolTip": "F:\\Projetos_CSharp\\Biblioteca\\BibliotecaApp.Infra.Data\\Context\\DataContext.cs",
+              "RelativeToolTip": "BibliotecaApp.Infra.Data\\Context\\DataContext.cs",
+              "ViewState": "AgIAAA0AAAAAAAAAAAAwwBkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-11-11T16:23:59.641Z",
               "EditorCaption": ""
             }
           ]

@@ -982,3 +982,6 @@ F:\Projetos_CSharp\Biblioteca\BibliotecaAPP.IntegrationTest\obj\Debug\net8.0\ref
 F:\Projetos_CSharp\Biblioteca\BibliotecaAPP.IntegrationTest\obj\Debug\net8.0\BibliotecaAPP.IntegrationTest.pdb
 F:\Projetos_CSharp\Biblioteca\BibliotecaAPP.IntegrationTest\obj\Debug\net8.0\BibliotecaAPP.IntegrationTest.genruntimeconfig.cache
 F:\Projetos_CSharp\Biblioteca\BibliotecaAPP.IntegrationTest\obj\Debug\net8.0\ref\BibliotecaAPP.IntegrationTest.dll
+F:\Projetos_CSharp\Biblioteca\BibliotecaAPP.IntegrationTest\obj\Debug\net8.0\BibliotecaAPP.IntegrationTest.sourcelink.json
+F:\Projetos_CSharp\Biblioteca\BibliotecaAPP.IntegrationTest\bin\Debug\net8.0\Polly.dll
+F:\Projetos_CSharp\Biblioteca\BibliotecaAPP.IntegrationTest\bin\Debug\net8.0\Polly.Core.dll

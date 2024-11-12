@@ -20,7 +20,9 @@ namespace BibliotecaApp.Infra.Data.Extensions
         {
             services.AddDbContext<DataContext>
                 (options => options.UseSqlServer(configuration.GetConnectionString("BibliotecaApp")));
-
+            
+            //services.AddLogging();
+            //services.AddScoped<DataContext>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             return services;

@@ -341,6 +341,10 @@
               "suppressParent": "All",
               "target": "Package",
               "version": "[8.0.10, )"
+            },
+            "Polly": {
+              "target": "Package",
+              "version": "[8.4.2, )"
             }
           },
           "imports": [

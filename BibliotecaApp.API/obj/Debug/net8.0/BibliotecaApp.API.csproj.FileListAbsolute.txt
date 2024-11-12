@@ -136,7 +136,6 @@ F:\Projetos_CSharp\Biblioteca\BibliotecaApp.API\obj\Debug\net8.0\BibliotecaApp.A
 F:\Projetos_CSharp\Biblioteca\BibliotecaApp.API\obj\Debug\net8.0\BibliotecaApp.API.AssemblyInfoInputs.cache
 F:\Projetos_CSharp\Biblioteca\BibliotecaApp.API\obj\Debug\net8.0\BibliotecaApp.API.AssemblyInfo.cs
 F:\Projetos_CSharp\Biblioteca\BibliotecaApp.API\obj\Debug\net8.0\BibliotecaApp.API.csproj.CoreCompileInputs.cache
-F:\Projetos_CSharp\Biblioteca\BibliotecaApp.API\obj\Debug\net8.0\BibliotecaApp.API.MvcApplicationPartsAssemblyInfo.cs
 F:\Projetos_CSharp\Biblioteca\BibliotecaApp.API\obj\Debug\net8.0\BibliotecaApp.API.MvcApplicationPartsAssemblyInfo.cache
 F:\Projetos_CSharp\Biblioteca\BibliotecaApp.API\obj\Debug\net8.0\staticwebassets.build.json
 F:\Projetos_CSharp\Biblioteca\BibliotecaApp.API\obj\Debug\net8.0\staticwebassets.development.json
@@ -152,3 +151,7 @@ F:\Projetos_CSharp\Biblioteca\BibliotecaApp.API\obj\Debug\net8.0\refint\Bibliote
 F:\Projetos_CSharp\Biblioteca\BibliotecaApp.API\obj\Debug\net8.0\BibliotecaApp.API.pdb
 F:\Projetos_CSharp\Biblioteca\BibliotecaApp.API\obj\Debug\net8.0\BibliotecaApp.API.genruntimeconfig.cache
 F:\Projetos_CSharp\Biblioteca\BibliotecaApp.API\obj\Debug\net8.0\ref\BibliotecaApp.API.dll
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.API\obj\Debug\net8.0\BibliotecaApp.API.sourcelink.json
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.API\bin\Debug\net8.0\Polly.dll
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.API\bin\Debug\net8.0\Polly.Core.dll
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.API\obj\Debug\net8.0\BibliotecaApp.API.MvcApplicationPartsAssemblyInfo.cs

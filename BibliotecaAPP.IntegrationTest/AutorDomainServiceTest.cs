@@ -5,11 +5,9 @@ using BibliotecaApp.Domain.Services;
 using BibliotecaApp.Infra.Data.Context;
 using BibliotecaApp.Infra.Data.Repositories;
 using FluentValidation;
-using Bogus;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 using ValidationException = FluentValidation.ValidationException;
@@ -37,17 +35,16 @@ namespace BibliotecaAPP.IntegrationTest
 
         private Autor GenerateValidAutor()
         {
-            return new Faker<Autor>("pt_BR")
-                .RuleFor(a => a.CodAu, f => f.Random.Int(1, 10000))
-                .RuleFor(a => a.Nome, f => f.Person.FullName)
-                .Generate();
+            return new Autor
+            {
+                Nome = "Nome Válido"
+            };
         }
 
         [Fact(DisplayName = "Adicionar Autor com sucesso")]
         public async Task AddAsync_ShouldAddAutor_WhenValid()
         {
             var newAutor = GenerateValidAutor();
-            newAutor.CodAu = 0;
 
             var result = await _autorDomainService.AddAsync(newAutor);
 
@@ -55,22 +52,35 @@ namespace BibliotecaAPP.IntegrationTest
             result.Nome.Should().Be(newAutor.Nome);
         }
 
-        [Fact(DisplayName = "Adicionar Autor deve falhar na validação")]
-        public async Task AddAsync_ShouldThrowValidationException_WhenInvalid()
+        [Fact(DisplayName = "Adicionar Autor deve falhar quando nome estiver vazio")]
+        public async Task AddAsync_ShouldThrowValidationException_WhenNomeIsEmpty()
         {
-            var autor = new Autor { Nome = "" };
+            var newAutor = GenerateValidAutor();
+            newAutor.Nome = ""; // Campo obrigatório
 
-            Func<Task> act = async () => await _autorDomainService.AddAsync(autor);
+            Func<Task> act = async () => await _autorDomainService.AddAsync(newAutor);
 
             var exception = await act.Should().ThrowAsync<ValidationException>();
             exception.Which.Errors.Should().Contain(e => e.ErrorMessage.Contains("O nome do autor é obrigatório."));
         }
 
+        [Fact(DisplayName = "Adicionar Autor deve falhar quando informado o codAu")]
+        public async Task AddAsync_ShouldThrowValidationException_WhenVodeAuIsNotEmpty()
+        {
+            var newAutor = GenerateValidAutor();
+            newAutor.CodAu= 1; // Campo obrigatório estar vazio
+
+            Func<Task> act = async () => await _autorDomainService.AddAsync(newAutor);
+
+            var exception = await act.Should().ThrowAsync<ValidationException>();
+            exception.Which.Errors.Should().Contain(e => e.ErrorMessage.Contains("Código do autor não deve ser informado na inclusão."));
+        }
+
+
         [Fact(DisplayName = "Atualizar Autor com sucesso")]
         public async Task UpdateAsync_ShouldUpdateAutor_WhenValid()
         {
             var autor = GenerateValidAutor();
-            autor.CodAu = 0;
             var addedAutor = await _autorDomainService.AddAsync(autor);
 
             addedAutor.Nome = "Nome Alterado";
@@ -81,21 +91,33 @@ namespace BibliotecaAPP.IntegrationTest
             result.Nome.Should().Be("Nome Alterado");
         }
 
-        [Fact(DisplayName = "Atualizar Autor deve falhar na validação")]
-        public async Task UpdateAsync_ShouldThrowValidationException_WhenInvalid()
+        [Fact(DisplayName = "Atualizar Autor deve falhar quando autor não encontrado")]
+        public async Task UpdateAsync_ShouldThrowAutorNotFoundException_WhenAutorNotFound()
         {
             var autor = GenerateValidAutor();
-            autor.CodAu = 0;
-            await _autorDomainService.AddAsync(autor);
-            autor.Nome = "";
+            autor.CodAu = new Random().Next(1, 10000);
 
             Func<Task> act = async () => await _autorDomainService.UpdateAsync(autor);
+
+            await act.Should().ThrowAsync<NotFoundExceptionAutor>()
+                .WithMessage($"Autor {autor.CodAu} não encontrado.");
+        }
+
+        [Fact(DisplayName = "Atualizar Autor deve falhar quando nome estiver vazio")]
+        public async Task UpdateAsync_ShouldThrowValidationException_WhenNomeIsEmpty()
+        {
+            var autor = GenerateValidAutor();
+            var addedAutor = await _autorDomainService.AddAsync(autor);
+
+            addedAutor.Nome = ""; // Campo obrigatório inválido
+
+            Func<Task> act = async () => await _autorDomainService.UpdateAsync(addedAutor);
 
             var exception = await act.Should().ThrowAsync<ValidationException>();
             exception.Which.Errors.Should().Contain(e => e.ErrorMessage.Contains("O nome do autor é obrigatório."));
         }
 
-        [Fact(DisplayName = "Excluir Autor deve falhar quando Autor não encontrado")]
+        [Fact(DisplayName = "Excluir Autor deve falhar quando autor não encontrado")]
         public async Task DeleteAsync_ShouldThrowAutorNotFoundException_WhenAutorNotFound()
         {
             var autor = GenerateValidAutor();
@@ -110,20 +132,19 @@ namespace BibliotecaAPP.IntegrationTest
         public async Task DeleteAsync_ShouldDeleteAutor_WhenAutorExists()
         {
             var autor = GenerateValidAutor();
-            autor.CodAu = 0;
-            var addedAutor = await _autorDomainService.AddAsync(autor);
+            await _autorDomainService.AddAsync(autor);
 
-            var result = await _autorDomainService.DeleteAsync(addedAutor);
+            var result = await _autorDomainService.DeleteAsync(autor);
 
             result.Should().NotBeNull();
-            result.CodAu.Should().Be(addedAutor.CodAu);
+            result.Should().BeEquivalentTo(autor);
         }
 
-        [Fact(DisplayName = "Consultar Autor por ID deve retornar Autor existente")]
+        [Fact(DisplayName = "Consultar Autor por ID deve retornar autor existente")]
         public async Task GetByIdAsync_ShouldReturnAutor_WhenAutorExists()
         {
             var autor = GenerateValidAutor();
-            autor.CodAu = 0;
+
             var addedAutor = await _autorDomainService.AddAsync(autor);
 
             var result = await _autorDomainService.GetByIdAsync(addedAutor.CodAu);
@@ -132,7 +153,7 @@ namespace BibliotecaAPP.IntegrationTest
             result.Should().BeEquivalentTo(addedAutor);
         }
 
-        [Fact(DisplayName = "Consultar Autor por ID deve retornar null quando Autor não encontrado")]
+        [Fact(DisplayName = "Consultar Autor por ID deve retornar null quando autor não encontrado")]
         public async Task GetByIdAsync_ShouldReturnNull_WhenAutorNotFound()
         {
             var autorId = new Random().Next(100, 10000);
@@ -142,15 +163,19 @@ namespace BibliotecaAPP.IntegrationTest
             result.Should().BeNull();
         }
 
-        [Fact(DisplayName = "Consultar todos os Autores")]
+        [Fact(DisplayName = "Consultar todos os autores")]
         public async Task GetManyAsync_ShouldReturnAutores_WhenAutoresExist()
         {
+            var autor1 = GenerateValidAutor();
+
+            var addedAutor = await _autorDomainService.AddAsync(autor1);
+
             await AddAsync_ShouldAddAutor_WhenValid();
 
             var result = await _autorDomainService.GetAllAsync();
 
             result.Should().NotBeNull();
-            result.Count().Should().BeGreaterThan(0);
+            result.Count.Should().BeGreaterThanOrEqualTo(1);
         }
     }
 }

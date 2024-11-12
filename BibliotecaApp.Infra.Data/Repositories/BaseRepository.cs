@@ -1,6 +1,7 @@
 ﻿using BibliotecaApp.Domain.Interfaces.Repositories;
 using BibliotecaApp.Infra.Data.Context;
 using Microsoft.EntityFrameworkCore;
+using Polly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,7 +36,12 @@ namespace BibliotecaApp.Infra.Data.Repositories
         }
 
         public async virtual Task<List<TEntity>> GetAll()
-            => await _dataContext.Set<TEntity>().ToListAsync();
+        {
+            return await _dataContext.ExecuteWithPoliciesAsync(async ctx =>
+            {
+                return await _dataContext.Set<TEntity>().ToListAsync();
+            });
+        }
 
         public async virtual Task<TEntity>? GetById(TKey id)
             => await _dataContext.Set<TEntity>().FindAsync(id);

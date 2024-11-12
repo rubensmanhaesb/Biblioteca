@@ -470,3 +470,6 @@ F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data.Test\obj\Debug\net8.0\ref
 F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data.Test\obj\Debug\net8.0\BibliotecaApp.Infra.Data.Test.pdb
 F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data.Test\obj\Debug\net8.0\BibliotecaApp.Infra.Data.Test.genruntimeconfig.cache
 F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data.Test\obj\Debug\net8.0\ref\BibliotecaApp.Infra.Data.Test.dll
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data.Test\obj\Debug\net8.0\BibliotecaApp.Infra.Data.Test.sourcelink.json
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data.Test\bin\Debug\net8.0\Polly.dll
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data.Test\bin\Debug\net8.0\Polly.Core.dll

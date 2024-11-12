@@ -3,6 +3,7 @@ using BibliotecaApp.Infra.Data.Extensions;
 using BibliotecaApp.Aplication.Extensions;
 using BibliotecaApp.Domain.Extensions;
 using BibliotecaApp.API.Middlewares;
+using BibliotecaApp.Infra.Data.Exceptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,9 +22,11 @@ var app = builder.Build();
 
 #region Middlewares
 app.UseMiddleware<ExceptionMiddleware>();
+app.UseMiddleware<CircuitBreakerMiddleware>();
+app.UseMiddleware<RetryMiddleware>();
 app.UseMiddleware<ValidationExceptionMiddleware>();
 app.UseMiddleware<NotFoundExceptionMiddleware>();
-app.UseMiddleware<RecordAlreadyExistsException>();
+app.UseMiddleware<RecordAlreadyExistsExceptionMiddleware>();
 #endregion 
 
 builder.Services.AddEndpointsApiExplorer();

@@ -15,3 +15,4 @@ F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data\obj\Debug\net8.0\refint\B
 F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data\obj\Debug\net8.0\BibliotecaApp.Infra.Data.pdb
 F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data\obj\Debug\net8.0\BibliotecaApp.Infra.Data.genruntimeconfig.cache
 F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data\obj\Debug\net8.0\ref\BibliotecaApp.Infra.Data.dll
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Infra.Data\obj\Debug\net8.0\BibliotecaApp.Infra.Data.sourcelink.json

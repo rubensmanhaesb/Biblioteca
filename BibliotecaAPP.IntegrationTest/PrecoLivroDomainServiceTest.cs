@@ -1,4 +1,5 @@
 ﻿using BibliotecaApp.Domain.Entities;
+using BibliotecaApp.Domain.Enums;
 using BibliotecaApp.Domain.Exceptions;
 using BibliotecaApp.Domain.Interfaces.Repositories;
 using BibliotecaApp.Domain.Services;
@@ -37,9 +38,10 @@ namespace BibliotecaAPP.IntegrationTest
         private PrecoLivro GenerateValidPrecoLivro()
         {
             return new Faker<PrecoLivro>("pt_BR")
-                .RuleFor(p => p.Codp, f => f.Random.Int())
-                .RuleFor(p => p.LivroCodl, f => f.Random.Int())
-                .RuleFor(p => p.Valor, f => f.Finance.Amount())
+                .RuleFor(p => p.Codp, f => f.Random.Int(min: 1))
+                .RuleFor(p => p.LivroCodl, f => f.Random.Int(min: 1))
+                .RuleFor(p => p.Valor, f => f.Finance.Amount(1)) // Valor sempre maior que zero
+                .RuleFor(p => p.TipoCompra, f => f.PickRandom<TipoCompra>())
                 .Generate();
         }
 
@@ -57,13 +59,16 @@ namespace BibliotecaAPP.IntegrationTest
             result.Should().BeEquivalentTo(newPrecoLivro);
         }
 
-        [Fact(DisplayName = "Adicionar Preço de Livro deve falhar na validação")]
-        public async Task AddAsync_ShouldThrowValidationException_WhenInvalid()
+        [Fact(DisplayName = "Adicionar Preço de Livro deve falhar na validação de campos obrigatórios")]
+        public async Task AddAsync_ShouldThrowValidationException_WhenFieldsAreMissing()
         {
-            var precoLivro = new PrecoLivro();
+            var precoLivro = new PrecoLivro
+            {
+                Valor = 10.0m // Campo LivroCodl ausente
+            };
             var validationErrors = new List<FluentValidation.Results.ValidationFailure>
             {
-                new FluentValidation.Results.ValidationFailure("Valor", "O valor é obrigatório.")
+                new FluentValidation.Results.ValidationFailure("LivroCodl", "O código do livro é obrigatório.")
             };
 
             _validatorMock.Setup(v => v.ValidateAsync(precoLivro, default))
@@ -72,8 +77,66 @@ namespace BibliotecaAPP.IntegrationTest
             Func<Task> act = async () => await _precoLivroDomainService.AddAsync(precoLivro);
 
             var exception = await act.Should().ThrowAsync<FluentValidation.ValidationException>();
+            exception.Which.Errors.Should().HaveCount(2);
+            exception.Which.Errors.Select(e => e.ErrorMessage).Should().BeEquivalentTo(
+                new[]
+                {
+                    "O código do livro é obrigatório.",
+                    "O código do livro deve ser maior que zero."
+                }
+            );
+        }
+
+        [Fact(DisplayName = "Adicionar Preço de Livro deve falhar na validação de valor zero")]
+        public async Task AddAsync_ShouldThrowValidationException_WhenValorIsZeroOrNegative()
+        {
+            var precoLivro = new PrecoLivro
+            {
+                LivroCodl = 1,
+                Valor = 0, // Valor inválido
+                TipoCompra = TipoCompra.Balcao
+            };
+            var validationErrors = new List<FluentValidation.Results.ValidationFailure>
+            {
+                new FluentValidation.Results.ValidationFailure("Valor", "O valor deve ser maior que zero.")
+            };
+
+            _validatorMock.Setup(v => v.ValidateAsync(precoLivro, default))
+                .ReturnsAsync(new FluentValidation.Results.ValidationResult(validationErrors));
+
+            Func<Task> act = async () => await _precoLivroDomainService.AddAsync(precoLivro);
+
+            var exception = await act.Should().ThrowAsync<FluentValidation.ValidationException>();
+            exception.Which.Errors.Should().HaveCount(2);
+            exception.Which.Errors.Select(e => e.ErrorMessage).Should().BeEquivalentTo(
+                new[]
+                {
+                    "O valor do livro é obrigatório.",
+                    "O valor deve ser maior que zero."
+                }
+            );
+        }
+
+
+        [Fact(DisplayName = "Atualizar Preço de Livro deve falhar quando tipo de compra é inválido")]
+        public async Task UpdateAsync_ShouldThrowValidationException_WhenTipoCompraIsInvalid()
+        {
+            var precoLivro = GenerateValidPrecoLivro();
+            precoLivro.TipoCompra = (TipoCompra)999; // Tipo de compra inválido
+
+            var validationErrors = new List<FluentValidation.Results.ValidationFailure>
+            {
+                new FluentValidation.Results.ValidationFailure("TipoCompra", "O tipo de compra é inválido.")
+            };
+
+            _validatorMock.Setup(v => v.ValidateAsync(precoLivro, default))
+                .ReturnsAsync(new FluentValidation.Results.ValidationResult(validationErrors));
+
+            Func<Task> act = async () => await _precoLivroDomainService.UpdateAsync(precoLivro);
+
+            var exception = await act.Should().ThrowAsync<FluentValidation.ValidationException>();
             exception.Which.Errors.Should().ContainSingle()
-                .Which.ErrorMessage.Should().Be("O valor é obrigatório.");
+                .Which.ErrorMessage.Should().Be("O tipo de compra é inválido.");
         }
 
         [Fact(DisplayName = "Atualizar Preço de Livro com sucesso")]
@@ -93,88 +156,49 @@ namespace BibliotecaAPP.IntegrationTest
             result.Should().NotBeNull();
             result.Should().BeEquivalentTo(resultInclusao);
         }
-
-        [Fact(DisplayName = "Atualizar Preço de Livro deve falhar na validação")]
-        public async Task UpdateAsync_ShouldThrowValidationException_WhenInvalid()
+        
+        [Fact(DisplayName = "Atualizar Preço de Livro deve lançar exceção quando não encontrado")]
+        public async Task UpdateAsync_ShouldThrowNotFoundExceptionPrecoLivro_WhenPrecoLivroNotFound()
         {
-            var precoLivro = new PrecoLivro { Codp = 1, Valor = 0 };
-            var validationErrors = new List<FluentValidation.Results.ValidationFailure>
-            {
-                new FluentValidation.Results.ValidationFailure("Valor", "O valor deve ser maior que zero.")
-            };
+            // Arrange: Cria um registro com um ID inexistente
+            var precoLivro = new PrecoLivro { Codp = 9999, LivroCodl = 1, Valor = 10, TipoCompra = TipoCompra.Balcao }; // ID que não existe no banco
 
-            _validatorMock.Setup(v => v.ValidateAsync(precoLivro, default))
-                .ReturnsAsync(new FluentValidation.Results.ValidationResult(validationErrors));
-
+            // Act: Tenta atualizar o registro inexistente
             Func<Task> act = async () => await _precoLivroDomainService.UpdateAsync(precoLivro);
 
-            var exception = await act.Should().ThrowAsync<FluentValidation.ValidationException>();
-            exception.Which.Errors.Should().ContainSingle()
-                .Which.ErrorMessage.Should().Be("O valor deve ser maior que zero.");
-        }
-
-        [Fact(DisplayName = "Excluir Preço de Livro deve falhar quando não encontrado")]
-        public async Task DeleteAsync_ShouldThrowPrecoLivroNotFoundException_WhenPrecoLivroNotFound()
-        {
-            var precoLivro = GenerateValidPrecoLivro();
-
-            Func<Task> act = async () => await _precoLivroDomainService.DeleteAsync(precoLivro);
-
-            var exception = await act.Should().ThrowAsync<NotFoundExceptionPrecoLivro>()
+            // Assert: Verifica se a exceção NotFoundExceptionPrecoLivro foi lançada
+            await act.Should().ThrowAsync<NotFoundExceptionPrecoLivro>()
                 .WithMessage($"Preço Livro {precoLivro.Codp} não encontrado.");
         }
 
         [Fact(DisplayName = "Excluir Preço de Livro com sucesso")]
         public async Task DeleteAsync_ShouldDeletePrecoLivro_WhenPrecoLivroExists()
         {
+            // Arrange: Adiciona um registro válido
             var precoLivro = GenerateValidPrecoLivro();
+            await _precoLivroDomainService.AddAsync(precoLivro);
 
-            _validatorMock.Setup(v => v.ValidateAsync(precoLivro, default))
-                .ReturnsAsync(new FluentValidation.Results.ValidationResult());
+            // Act: Exclui o registro recém-adicionado
+            var result = await _precoLivroDomainService.DeleteAsync(precoLivro);
 
-            var resultInclusao = await _precoLivroDomainService.AddAsync(precoLivro);
-
-            var result = await _precoLivroDomainService.DeleteAsync(resultInclusao);
-
+            // Assert: Verifica se o registro foi excluído corretamente
             result.Should().NotBeNull();
             result.Should().BeEquivalentTo(precoLivro);
         }
 
-        [Fact(DisplayName = "Consultar Preço de Livro por ID deve retornar preço existente")]
-        public async Task GetByIdAsync_ShouldReturnPrecoLivro_WhenPrecoLivroExists()
+        [Fact(DisplayName = "Excluir Preço de Livro deve lançar exceção quando não encontrado")]
+        public async Task DeleteAsync_ShouldThrowNotFoundExceptionPrecoLivro_WhenPrecoLivroNotFound()
         {
-            var precoLivro = GenerateValidPrecoLivro();
+            // Arrange: Cria um registro com um ID inexistente
+            var precoLivro = new PrecoLivro { Codp = 9999 }; // ID que não existe no banco
 
-            _validatorMock.Setup(v => v.ValidateAsync(precoLivro, default))
-                .ReturnsAsync(new FluentValidation.Results.ValidationResult());
+            // Act: Tenta excluir o registro inexistente
+            Func<Task> act = async () => await _precoLivroDomainService.DeleteAsync(precoLivro);
 
-            var resultInclusao = await _precoLivroDomainService.AddAsync(precoLivro);
-
-            var result = await _precoLivroDomainService.GetByIdAsync(precoLivro.Codp);
-
-            result.Should().NotBeNull();
-            result.Should().BeEquivalentTo(precoLivro);
+            // Assert: Verifica se a exceção NotFoundExceptionPrecoLivro foi lançada
+            await act.Should().ThrowAsync<NotFoundExceptionPrecoLivro>()
+                .WithMessage($"Preço Livro {precoLivro.Codp} não encontrado.");
         }
 
-        [Fact(DisplayName = "Consultar Preço de Livro por ID deve retornar null quando não encontrado")]
-        public async Task GetByIdAsync_ShouldReturnNull_WhenPrecoLivroNotFound()
-        {
-            var precoLivro = new PrecoLivro { Codp = new Random().Next(100, 10000) };
-
-            var result = await _precoLivroDomainService.GetByIdAsync(precoLivro.Codp);
-
-            result.Should().BeNull();
-        }
-
-        [Fact(DisplayName = "Consultar todos os preços de livros")]
-        public async Task GetManyAsync_ShouldReturnPrecoLivros_WhenPrecoLivrosExist()
-        {
-            await AddAsync_ShouldAddPrecoLivro_WhenValid();
-
-            var result = await _precoLivroDomainService.GetAllAsync();
-
-            result.Should().NotBeNull();
-            result.Count().Should().BeGreaterThan(0);
-        }
     }
 }

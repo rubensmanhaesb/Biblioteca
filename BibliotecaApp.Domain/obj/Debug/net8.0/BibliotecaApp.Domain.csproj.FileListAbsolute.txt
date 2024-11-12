@@ -10,3 +10,4 @@ F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Domain\obj\Debug\net8.0\BibliotecaAp
 F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Domain\obj\Debug\net8.0\refint\BibliotecaApp.Domain.dll
 F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Domain\obj\Debug\net8.0\BibliotecaApp.Domain.pdb
 F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Domain\obj\Debug\net8.0\ref\BibliotecaApp.Domain.dll
+F:\Projetos_CSharp\Biblioteca\BibliotecaApp.Domain\obj\Debug\net8.0\BibliotecaApp.Domain.sourcelink.json

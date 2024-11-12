@@ -35,7 +35,7 @@ namespace BibliotecaApp.Domain.Services
             if (entity == null)
                 throw new NotFoundExceptionLivro(id);
 
-            _unitOfWork.DataContext.Entry(entity).State = EntityState.Detached; 
+            //_unitOfWork.DataContext.Entry(entity).State = EntityState.Detached; 
         }
 
         public async override Task<Livro> AddAsync(Livro entity)
