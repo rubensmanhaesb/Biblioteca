@@ -4,10 +4,12 @@ using BibliotecaApp.Domain.Interfaces.Repositories;
 using BibliotecaApp.Domain.Services;
 using BibliotecaApp.Infra.Data.Context;
 using BibliotecaApp.Infra.Data.Repositories;
+using BibliotecaAPP.IntegrationTest.Helpers;
 using Bogus;
 using FluentAssertions;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -21,6 +23,7 @@ namespace BibliotecaAPP.IntegrationTest
     {
         private readonly Mock<IValidator<LivroAssunto>> _validatorMock;
         private readonly LivroAssuntoDomainService _livroAssuntoDomainService;
+        private readonly UnitOfWork _unitOfWork;
         private readonly DataContext _dataContext;
 
         public LivroAssuntoDomainServiceTest()
@@ -31,20 +34,16 @@ namespace BibliotecaAPP.IntegrationTest
                 .UseInMemoryDatabase(databaseName: "BibliotecaAppTest")
                 .Options;
             
-            _dataContext = new DataContext(options);
+            _dataContext = new DataContext(options, new LoggerFactory().CreateLogger<DataContext>());
+            _unitOfWork = new UnitOfWork(_dataContext);
 
-            _livroAssuntoDomainService = new LivroAssuntoDomainService(
-                new UnitOfWork(_dataContext),
-                _validatorMock.Object);
+            _livroAssuntoDomainService = new LivroAssuntoDomainService(_unitOfWork, _validatorMock.Object);
                 
         }
 
         private LivroAssunto GenerateValidLivroAssunto()
         {
-            return new Faker<LivroAssunto>("pt_BR")
-                .RuleFor(la => la.LivroCodl, f => f.Random.Int())
-                .RuleFor(la => la.AssuntoCodAs, f => f.Random.Int())
-                .Generate();
+            return LivroAssuntoTestHelper.GenerateValidLivroAssunto(_unitOfWork).Result;
         }
 
         [Fact(DisplayName = "Adicionar LivroAssunto com sucesso")]
@@ -89,7 +88,8 @@ namespace BibliotecaAPP.IntegrationTest
                 .ReturnsAsync(new FluentValidation.Results.ValidationResult());
 
             var resultInclusao = await _livroAssuntoDomainService.AddAsync(newLivroAssunto);
-            _dataContext.ChangeTracker.Clear();
+            _unitOfWork.DataContext.Entry(newLivroAssunto).State = EntityState.Detached;
+            //_dataContext.ChangeTracker.Clear();
 
             var updatedLivroAssunto = new LivroAssunto
             {
@@ -98,10 +98,14 @@ namespace BibliotecaAPP.IntegrationTest
                 Livro = resultInclusao.Livro
             };
 
+            // _unitOfWork.DataContext.Entry(updatedLivroAssunto).State = EntityState.Detached;
+            _unitOfWork.DataContext.Entry(newLivroAssunto).State = EntityState.Detached;
             _validatorMock.Setup(v => v.ValidateAsync(updatedLivroAssunto, default))
                 .ReturnsAsync(new FluentValidation.Results.ValidationResult());
 
             var result = await _livroAssuntoDomainService.UpdateAsync(updatedLivroAssunto);
+
+
 
             result.Should().NotBeNull();
             result.Should().BeEquivalentTo(updatedLivroAssunto);

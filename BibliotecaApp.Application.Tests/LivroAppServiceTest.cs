@@ -1,236 +1,265 @@
+
 using AutoMapper;
 using BibliotecaApp.Aplication.Dtos;
+using BibliotecaApp.Aplication.Mappings;
 using BibliotecaApp.Aplication.Services;
 using BibliotecaApp.Domain.Entities;
-using BibliotecaApp.Domain.Exceptions;
 using BibliotecaApp.Domain.Interfaces.Services;
-using Bogus;
+using BibliotecaApp.Domain.Services;
+using BibliotecaApp.Infra.Data.Context;
+using BibliotecaApp.Infra.Data.Repositories;
+using BibliotecaApp.Domain.Exceptions;
 using FluentAssertions;
-using Moq;
-using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Threading.Tasks;
 using Xunit;
+using FluentValidation;
 
 namespace BibliotecaApp.Aplication.Test.Services
 {
     public class LivroAppServiceTest
     {
-        private readonly Mock<ILivroDomainService> _livroDomainServiceMock;
-        private readonly Mock<IMapper> _mapperMock;
+        private readonly IMapper _mapper;
         private readonly LivroAppService _livroAppService;
+        private readonly DataContext _context;
+        private readonly LivroDomainService _livroDomainService;
 
         public LivroAppServiceTest()
         {
-            _livroDomainServiceMock = new Mock<ILivroDomainService>();
-            _mapperMock = new Mock<IMapper>();
-            _livroAppService = new LivroAppService(_mapperMock.Object, _livroDomainServiceMock.Object);
+            var options = new DbContextOptionsBuilder<DataContext>()
+                .UseInMemoryDatabase(databaseName: "BibliotecaAppTest")
+                .Options;
+
+            _context = new DataContext(options, new LoggerFactory().CreateLogger<DataContext>());
+            var LivroRepository = new LivroRepository(_context);
+            var unitOfWork = new UnitOfWork(_context);
+            _livroDomainService = new LivroDomainService(unitOfWork);
+
+            var config = new MapperConfiguration(cfg => cfg.AddProfile(new LivroMapping()));
+            _mapper = config.CreateMapper();
+            _livroAppService = new LivroAppService(_mapper, _livroDomainService);
         }
 
-        private LivroInsertDto GenerateLivroInsertDto()
+        private LivroInsertDto GeneratelivroInsertDto() => new LivroInsertDto
         {
-            return new Faker<LivroInsertDto>()
-                .RuleFor(l => l.Titulo, f => f.Lorem.Sentence())
-                .RuleFor(l => l.Editora, f => f.Company.CompanyName())
-                .RuleFor(l => l.Edicao, f => f.Random.Int(1, 10))
-                .RuleFor(l => l.AnoPublicacao, f => f.Date.Past(20).Year.ToString())
-                .Generate();
-        }
+            Titulo = "Titulo Teste",
+            Edicao = 1,
+            Editora = "Editora Teste",
+            AnoPublicacao = "2021"
+        };
 
-        private LivroUpdateDto GenerateLivroUpdateDto()
+        private LivroUpdateDto GenerateLivroUpdateDto(int codl) => new LivroUpdateDto
         {
-            return new Faker<LivroUpdateDto>()
-                .RuleFor(l => l.Codl, f => f.Random.Int())
-                .RuleFor(l => l.Titulo, f => f.Lorem.Sentence())
-                .RuleFor(l => l.Editora, f => f.Company.CompanyName())
-                .RuleFor(l => l.Edicao, f => f.Random.Int(1, 10))
-                .RuleFor(l => l.AnoPublicacao, f => f.Date.Past(20).Year.ToString())
-                .Generate();
-        }
+            Codl = codl,
+            Titulo = "Alteração Titulo Teste",
+            Edicao = 4,
+            Editora = "Alteração Editora Teste",
+            AnoPublicacao = "2024"
+        };
 
-        private LivroDeleteDto GenerateLivroDeleteDto()
+        private LivroDeleteDto GenerateLivroDeleteDto(int codl) => new LivroDeleteDto
         {
-            return new Faker<LivroDeleteDto>()
-                .RuleFor(l => l.Codl, f => f.Random.Int())
-                .Generate();
-        }
-
-        private Livro GenerateLivro()
-        {
-            return new Faker<Livro>()
-                .RuleFor(l => l.Codl, f => f.Random.Int())
-                .RuleFor(l => l.Titulo, f => f.Lorem.Sentence())
-                .RuleFor(l => l.Editora, f => f.Company.CompanyName())
-                .RuleFor(l => l.Edicao, f => f.Random.Int(1, 10))
-                .RuleFor(l => l.AnoPublicacao, f => f.Date.Past(20).Year.ToString())
-                .Generate();
-        }
-
-        private LivroResponseDto GenerateLivroResponseDto()
-        {
-            return new Faker<LivroResponseDto>()
-                .RuleFor(l => l.Codl, f => f.Random.Int())
-                .RuleFor(l => l.Titulo, f => f.Lorem.Sentence())
-                .RuleFor(l => l.Editora, f => f.Company.CompanyName())
-                .RuleFor(l => l.Edicao, f => f.Random.Int(1, 10))
-                .RuleFor(l => l.AnoPublicacao, f => f.Date.Past(20).Year.ToString())
-                .Generate();
-        }
+            Codl = codl
+        };
 
         [Fact(DisplayName = "Adicionar Livro com sucesso")]
         public async Task AddAsync_ShouldAddLivro_WhenValid()
         {
-            // Arrange
-            var livroInsertDto = GenerateLivroInsertDto();
-            var livro = GenerateLivro();
-            var livroResponseDto = GenerateLivroResponseDto();
-
-            _mapperMock.Setup(m => m.Map<Livro>(livroInsertDto)).Returns(livro);
-            _livroDomainServiceMock.Setup(s => s.AddAsync(livro));
-            _mapperMock.Setup(m => m.Map<LivroResponseDto>(livro)).Returns(livroResponseDto);
-
-            // Act
+            var livroInsertDto = GeneratelivroInsertDto();
             var result = await _livroAppService.AddAsync(livroInsertDto);
 
-            // Assert
-            result.Should().BeEquivalentTo(livroResponseDto);
-        }
-
-        [Fact(DisplayName = "Adicionar Livro deve falhar quando dados são inválidos")]
-        public async Task AddAsync_ShouldThrowValidationException_WhenInvalidData()
-        {
-            // Arrange
-            var livroInsertDto = new LivroInsertDto { Titulo = "" }; // Dados inválidos
-            var livro = GenerateLivro();
-
-            _mapperMock.Setup(m => m.Map<Livro>(livroInsertDto)).Returns(livro);
-            _livroDomainServiceMock.Setup(s => s.AddAsync(livro)).ThrowsAsync(new ValidationException("Título é obrigatório"));
-
-            // Act
-            Func<Task> act = async () => await _livroAppService.AddAsync(livroInsertDto);
-
-            // Assert
-            await act.Should().ThrowAsync<ValidationException>().WithMessage("Título é obrigatório");
+            result.Should().NotBeNull();
+            result.Titulo.Should().Be(livroInsertDto.Titulo);
+            result.Editora.Should().Be(livroInsertDto.Editora);
+            result.Edicao.Should().Be(livroInsertDto.Edicao);
+            result.Codl.Should().BeGreaterThan(0);
         }
 
         [Fact(DisplayName = "Atualizar Livro com sucesso")]
         public async Task UpdateAsync_ShouldUpdateLivro_WhenValid()
         {
-            // Arrange
-            var livroUpdateDto = GenerateLivroUpdateDto();
-            var livro = GenerateLivro();
-            var livroResponseDto = GenerateLivroResponseDto();
+            var livroInsertDto = GeneratelivroInsertDto();
+            var addedLivro = await _livroAppService.AddAsync(livroInsertDto);
+            var LivroUpdateDto = GenerateLivroUpdateDto(addedLivro.Codl);
 
-            _mapperMock.Setup(m => m.Map<Livro>(livroUpdateDto)).Returns(livro);
-            _livroDomainServiceMock.Setup(s => s.UpdateAsync(livro));
-            _mapperMock.Setup(m => m.Map<LivroResponseDto>(livro)).Returns(livroResponseDto);
+            var result = await _livroAppService.UpdateAsync(LivroUpdateDto);
 
-            // Act
-            var result = await _livroAppService.UpdateAsync(livroUpdateDto);
+            result.Should().NotBeNull();
+            result.Codl.Should().Be(LivroUpdateDto.Codl);
+            result.Titulo.Should().Be(LivroUpdateDto.Titulo);
+            result.Edicao.Should().Be(LivroUpdateDto.Edicao);
+            result.Editora.Should().Be(LivroUpdateDto.Editora);
+            result.AnoPublicacao.Should().Be(LivroUpdateDto.AnoPublicacao);
 
-            // Assert
-            result.Should().BeEquivalentTo(livroResponseDto);
-        }
-
-        [Fact(DisplayName = "Atualizar Livro deve falhar quando não encontrado")]
-        public async Task UpdateAsync_ShouldThrowLivroNotFoundException_WhenLivroNotFound()
-        {
-            // Arrange
-            var livroUpdateDto = GenerateLivroUpdateDto();
-            var livro = GenerateLivro();
-
-            _mapperMock.Setup(m => m.Map<Livro>(livroUpdateDto)).Returns(livro);
-            _livroDomainServiceMock.Setup(s => s.UpdateAsync(livro)).ThrowsAsync(new NotFoundExceptionLivro(livro.Codl));
-
-            // Act
-            Func<Task> act = async () => await _livroAppService.UpdateAsync(livroUpdateDto);
-
-            // Assert
-            await act.Should().ThrowAsync<NotFoundExceptionLivro>().WithMessage($"Livro {livro.Codl} não encontrado.");
         }
 
         [Fact(DisplayName = "Excluir Livro com sucesso")]
         public async Task DeleteAsync_ShouldDeleteLivro_WhenLivroExists()
         {
-            // Arrange
-            var livroDeleteDto = GenerateLivroDeleteDto();
-            var livro = GenerateLivro();
-            var livroResponseDto = GenerateLivroResponseDto();
+            var livroInsertDto = GeneratelivroInsertDto();
+            var addedLivro = await _livroAppService.AddAsync(livroInsertDto);
+            var LivroDeleteDto = GenerateLivroDeleteDto(addedLivro.Codl);
 
-            _mapperMock.Setup(m => m.Map<Livro>(livroDeleteDto)).Returns(livro);
-            _livroDomainServiceMock.Setup(s => s.DeleteAsync(livro));
-            _mapperMock.Setup(m => m.Map<LivroResponseDto>(livro)).Returns(livroResponseDto);
+            var result = await _livroAppService.DeleteAsync(LivroDeleteDto);
 
-            // Act
-            var result = await _livroAppService.DeleteAsync(livroDeleteDto);
+            result.Should().NotBeNull();
+            result.Codl.Should().Be(addedLivro.Codl);
+            result.Titulo.Should().Be(addedLivro.Titulo);
+            result.Edicao.Should().Be(addedLivro.Edicao);
+            result.Editora.Should().Be(addedLivro.Editora);
+            result.AnoPublicacao.Should().Be(addedLivro.AnoPublicacao);
 
-            // Assert
-            result.Should().BeEquivalentTo(livroResponseDto);
         }
 
-        [Fact(DisplayName = "Excluir Livro deve falhar quando não encontrado")]
-        public async Task DeleteAsync_ShouldThrowLivroNotFoundException_WhenLivroNotFound()
-        {
-            // Arrange
-            var livroDeleteDto = GenerateLivroDeleteDto();
-            var livro = GenerateLivro();
-
-            _mapperMock.Setup(m => m.Map<Livro>(livroDeleteDto)).Returns(livro);
-            _livroDomainServiceMock.Setup(s => s.DeleteAsync(livro)).ThrowsAsync(new NotFoundExceptionLivro(livro.Codl));
-
-            // Act
-            Func<Task> act = async () => await _livroAppService.DeleteAsync(livroDeleteDto);
-
-            // Assert
-            await act.Should().ThrowAsync<NotFoundExceptionLivro>().WithMessage($"Livro {livro.Codl} não encontrado.");
-        }
-
-        [Fact(DisplayName = "Obter todos os livros com sucesso")]
-        public async Task GetAllAsync_ShouldReturnLivros_WhenLivrosExist()
-        {
-            // Arrange
-            var livros = new List<Livro> { GenerateLivro(), GenerateLivro() };
-            var livrosResponseDto = new List<LivroResponseDto> { GenerateLivroResponseDto(), GenerateLivroResponseDto() };
-
-            _livroDomainServiceMock.Setup(s => s.GetAllAsync()).ReturnsAsync(livros);
-            _mapperMock.Setup(m => m.Map<List<LivroResponseDto>>(livros)).Returns(livrosResponseDto);
-
-            // Act
-            var result = await _livroAppService.GetAllAsync();
-
-            // Assert
-            result.Should().BeEquivalentTo(livrosResponseDto);
-        }
-
-        [Fact(DisplayName = "Obter livro por ID com sucesso")]
+        [Fact(DisplayName = "Obter Livro por ID com sucesso")]
         public async Task GetByIdAsync_ShouldReturnLivro_WhenLivroExists()
         {
-            // Arrange
-            var livro = GenerateLivro();
-            var livroResponseDto = GenerateLivroResponseDto();
+            var livroInsertDto = GeneratelivroInsertDto();
+            var addedLivro = await _livroAppService.AddAsync(livroInsertDto);
 
-            _livroDomainServiceMock.Setup(s => s.GetByIdAsync(livro.Codl)).ReturnsAsync(livro);
-            _mapperMock.Setup(m => m.Map<LivroResponseDto>(livro)).Returns(livroResponseDto);
+            var result = await _livroAppService.GetByIdAsync(addedLivro.Codl);
 
-            // Act
-            var result = await _livroAppService.GetByIdAsync(livro.Codl);
+            result.Should().NotBeNull();
+            result.Codl.Should().Be(addedLivro.Codl);
+            result.Titulo.Should().Be(addedLivro.Titulo);
+            result.Edicao.Should().Be(addedLivro.Edicao);
+            result.Editora.Should().Be(addedLivro.Editora);
+            result.AnoPublicacao.Should().Be(addedLivro.AnoPublicacao);
 
-            // Assert
-            result.Should().BeEquivalentTo(livroResponseDto);
         }
 
-        [Fact(DisplayName = "Obter livro por ID deve retornar null quando livro não encontrado")]
-        public async Task GetByIdAsync_ShouldReturnNull_WhenLivroNotFound()
+        [Fact(DisplayName = "Obter todos os Livros com sucesso")]
+        public async Task GetAllAsync_ShouldReturnAllLivros_WhenLivrosExist()
         {
-            // Arrange
-            var livroId = new Faker().Random.Int();
+            await _livroAppService.AddAsync(GeneratelivroInsertDto());
+            await _livroAppService.AddAsync(GeneratelivroInsertDto());
 
-            _livroDomainServiceMock.Setup(s => s.GetByIdAsync(livroId)).ReturnsAsync((Livro)null);
+            var result = await _livroAppService.GetAllAsync();
 
-            // Act
-            var result = await _livroAppService.GetByIdAsync(livroId);
+            result.Should().NotBeNull();
+            result.Count.Should().BeGreaterThan(1);
+        }
 
-            // Assert
-            result.Should().BeNull();
+
+
+        [Fact(DisplayName = "Adicionar Livro deve falhar quando o titulo estiver vazio")]
+        public async Task AddAsync_ShouldThrowValidationException_WhenTituloIsEmpty()
+        {
+            var invalidlivroInsertDto = GeneratelivroInsertDto();
+            invalidlivroInsertDto.Titulo = "" ;
+
+            Func<Task> act = async () => await _livroAppService.AddAsync(invalidlivroInsertDto);
+
+            await act.Should().ThrowAsync<ValidationException>()
+                .WithMessage("*O título do Livro é obrigatório.*");
+        }
+
+        [Fact(DisplayName = "Adicionar Livro deve falhar quando a edicção estiver vazio")]
+        public async Task AddAsync_ShouldThrowValidationException_WhenEdicaoIsEmpty()
+        {
+            var invalidlivroInsertDto = GeneratelivroInsertDto();
+            invalidlivroInsertDto.Edicao = 0;
+
+            Func<Task> act = async () => await _livroAppService.AddAsync(invalidlivroInsertDto);
+
+            await act.Should().ThrowAsync<ValidationException>()
+                .WithMessage("*A Edição não pode ser zero ou negativa.*");
+        }
+
+        [Fact(DisplayName = "Adicionar Livro deve falhar quando a editora estiver vazia")]
+        public async Task AddAsync_ShouldThrowValidationException_WhenEditoraIsEmpty()
+        {
+            var invalidlivroInsertDto = GeneratelivroInsertDto();
+            invalidlivroInsertDto.Editora= "";
+
+            Func<Task> act = async () => await _livroAppService.AddAsync(invalidlivroInsertDto);
+
+            await act.Should().ThrowAsync<ValidationException>()
+                .WithMessage("*A Editora do Livro é obrigatória.*");
+        }
+
+        [Fact(DisplayName = "Adicionar Livro deve falhar quando o ano publicação estiver vazio")]
+        public async Task AddAsync_ShouldThrowValidationException_WhenAnoPublicacaoIsEmpty()
+        {
+            var invalidlivroInsertDto = GeneratelivroInsertDto();
+            invalidlivroInsertDto.AnoPublicacao = "";
+
+            Func<Task> act = async () => await _livroAppService.AddAsync(invalidlivroInsertDto);
+
+            await act.Should().ThrowAsync<ValidationException>()
+                .WithMessage("*A Publicação deve ter exatamente 4 caracteres.*");
+        }
+
+
+        [Fact(DisplayName = "Atualizar Livro deve falhar quando o titulo estiver vazia")]
+        public async Task UpdateAsync_ShouldThrowValidationException_WhenTituloIsEmpty()
+        {
+            var livroInsertDto = GeneratelivroInsertDto();
+            var addedLivro = await _livroAppService.AddAsync(livroInsertDto);
+
+            var invalidLivroUpdateDto = GenerateLivroUpdateDto(addedLivro.Codl);
+            invalidLivroUpdateDto.Titulo = "";
+
+            Func<Task> act = async () => await _livroAppService.UpdateAsync(invalidLivroUpdateDto);
+
+            await act.Should().ThrowAsync<ValidationException>()
+                .WithMessage("*O título do Livro é obrigatório.*");
+        }
+
+        [Fact(DisplayName = "Atualizar Livro deve falhar quando a editora estiver vazia")]
+        public async Task UpdateAsync_ShouldThrowValidationException_WhenEditoraIsEmpty()
+        {
+            var livroInsertDto = GeneratelivroInsertDto();
+            var addedLivro = await _livroAppService.AddAsync(livroInsertDto);
+
+            var invalidLivroUpdateDto = GenerateLivroUpdateDto(addedLivro.Codl);
+            invalidLivroUpdateDto.Editora = "";
+
+            Func<Task> act = async () => await _livroAppService.UpdateAsync(invalidLivroUpdateDto);
+
+            await act.Should().ThrowAsync<ValidationException>()
+                .WithMessage("*A Editora do livro é obrigatória*");
+        }
+
+        [Fact(DisplayName = "Atualizar Livro deve falhar quando o ano publicação estiver vazia")]
+        public async Task UpdateAsync_ShouldThrowValidationException_WhenAnoPublicacaoIsEmpty()
+        {
+            var livroInsertDto = GeneratelivroInsertDto();
+            var addedLivro = await _livroAppService.AddAsync(livroInsertDto);
+
+            var invalidLivroUpdateDto = GenerateLivroUpdateDto(addedLivro.Codl);
+            invalidLivroUpdateDto.AnoPublicacao = "";
+
+            Func<Task> act = async () => await _livroAppService.UpdateAsync(invalidLivroUpdateDto);
+
+            await act.Should().ThrowAsync<ValidationException>()
+                .WithMessage("*A Publicação deve ter exatamente 4 caracteres.*");
+        }
+
+
+
+        [Fact(DisplayName = "Atualizar Livro deve falhar quando o código do Livro não existe")]
+        public async Task UpdateAsync_ShouldThrowNotFoundException_WhenLivroDoesNotExist()
+        {
+            var invalidLivroUpdateDto = GenerateLivroUpdateDto(9999);
+
+            Func<Task> act = async () => await _livroAppService.UpdateAsync(invalidLivroUpdateDto);
+
+            await act.Should().ThrowAsync<NotFoundExceptionLivro>()
+                .WithMessage($"Livro {invalidLivroUpdateDto.Codl} não encontrado.");
+        }
+
+        [Fact(DisplayName = "Excluir Livro deve falhar quando o código do Livro não existe")]
+        public async Task DeleteAsync_ShouldThrowNotFoundException_WhenLivroDoesNotExist()
+        {
+            var invalidLivroDeleteDto = new LivroDeleteDto { Codl = 9999 };
+
+            Func<Task> act = async () => await _livroAppService.DeleteAsync(invalidLivroDeleteDto);
+
+            await act.Should().ThrowAsync<NotFoundExceptionLivro>()
+                .WithMessage($"Livro {invalidLivroDeleteDto.Codl} não encontrado.");
         }
     }
 }

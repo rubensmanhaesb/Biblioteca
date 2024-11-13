@@ -42,7 +42,6 @@ namespace BibliotecaApp.Domain.Services
             await ValidateEntityAsync(TipoOperacao.Alteracao, entity);
 
             var assunto = await _assuntoRepository.GetById(entity.CodAs);
-            _unitOfWork.DataContext.Entry(assunto).State = EntityState.Detached;
             if (assunto == null)
                 throw new NotFoundExceptionAssunto(entity.CodAs);
             _unitOfWork.DataContext.Entry(assunto).State = EntityState.Detached;

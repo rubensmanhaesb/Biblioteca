@@ -3,6 +3,7 @@ using BibliotecaApp.Domain.Exceptions;
 using BibliotecaApp.Domain.Interfaces.Repositories;
 using BibliotecaApp.Domain.Interfaces.Services;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 
 namespace BibliotecaApp.Domain.Services
@@ -36,6 +37,7 @@ namespace BibliotecaApp.Domain.Services
         public async override Task<LivroAssunto> UpdateAsync(LivroAssunto entity)
         {
             await ValidateEntity(entity);
+            _unitOfWork.DataContext.Entry(entity).State = EntityState.Detached;
             await _livroAssuntoRepository.Update(entity);
             await _unitOfWork.SaveChanges();
             return entity;
@@ -59,6 +61,7 @@ namespace BibliotecaApp.Domain.Services
             var validationResult = await _validator.ValidateAsync(entity);
             if (!validationResult.IsValid)
                 throw new ValidationException(validationResult.Errors);
+            _unitOfWork.DataContext.Entry(entity).State = EntityState.Detached;
         }
     }
 }

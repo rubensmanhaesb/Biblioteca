@@ -1,159 +1,180 @@
 ﻿using AutoMapper;
 using BibliotecaApp.Aplication.Dtos;
+using BibliotecaApp.Aplication.Mappings;
 using BibliotecaApp.Aplication.Services;
 using BibliotecaApp.Domain.Entities;
-using BibliotecaApp.Domain.Exceptions;
 using BibliotecaApp.Domain.Interfaces.Services;
-using Bogus;
+using BibliotecaApp.Domain.Services;
+using BibliotecaApp.Infra.Data.Context;
+using BibliotecaApp.Infra.Data.Repositories;
+using BibliotecaApp.Domain.Exceptions;
 using FluentAssertions;
-using Moq;
-using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Threading.Tasks;
 using Xunit;
+using FluentValidation;
 
 namespace BibliotecaApp.Aplication.Test.Services
 {
     public class AssuntoAppServiceTest
     {
-        private readonly Mock<IAssuntoDomainService> _assuntoDomainServiceMock;
-        private readonly Mock<IMapper> _mapperMock;
+        private readonly IMapper _mapper;
         private readonly AssuntoAppService _assuntoAppService;
+        private readonly DataContext _context;
+        private readonly AssuntoDomainService _assuntoDomainService;
 
         public AssuntoAppServiceTest()
         {
-            _assuntoDomainServiceMock = new Mock<IAssuntoDomainService>();
-            _mapperMock = new Mock<IMapper>();
-            _assuntoAppService = new AssuntoAppService(_mapperMock.Object, _assuntoDomainServiceMock.Object);
+            var options = new DbContextOptionsBuilder<DataContext>()
+                .UseInMemoryDatabase(databaseName: "BibliotecaAppTest")
+                .Options;
+
+            _context = new DataContext(options, new LoggerFactory().CreateLogger<DataContext>());
+            var assuntoRepository = new AssuntoRepository(_context);
+            var unitOfWork = new UnitOfWork(_context);
+            _assuntoDomainService = new AssuntoDomainService(unitOfWork);
+
+            var config = new MapperConfiguration(cfg => cfg.AddProfile(new AssuntoMapping()));
+            _mapper = config.CreateMapper();
+            _assuntoAppService = new AssuntoAppService(_mapper, _assuntoDomainService);
         }
 
-        private AssuntoInsertDto GenerateAssuntoInsertDto() => new Faker<AssuntoInsertDto>()
-            .RuleFor(a => a.Descricao, f => f.Lorem.Letter(20)).Generate();
+        private AssuntoInsertDto GenerateAssuntoInsertDto() => new AssuntoInsertDto
+        {
+            Descricao = "Descrição Teste"
+        };
 
-        private AssuntoUpdateDto GenerateAssuntoUpdateDto() => new Faker<AssuntoUpdateDto>()
-            .RuleFor(a => a.CodAs, f => f.Random.Int(1, 100))
-            .RuleFor(a => a.Descricao, f => f.Lorem.Letter(20)).Generate();
+        private AssuntoUpdateDto GenerateAssuntoUpdateDto(int codAs) => new AssuntoUpdateDto
+        {
+            CodAs = codAs,
+            Descricao = "Descrição Atualizada"
+        };
 
-        private AssuntoDeleteDto GenerateAssuntoDeleteDto() => new Faker<AssuntoDeleteDto>()
-            .RuleFor(a => a.CodAs, f => f.Random.Int(1, 100)).Generate();
-
-        private Assunto GenerateAssunto() => new Faker<Assunto>()
-            .RuleFor(a => a.CodAs, f => f.Random.Int(1, 100))
-            .RuleFor(a => a.Descricao, f => f.Lorem.Letter(20)).Generate();
+        private AssuntoDeleteDto GenerateAssuntoDeleteDto(int codAs) => new AssuntoDeleteDto
+        {
+            CodAs = codAs
+        };
 
         [Fact(DisplayName = "Adicionar Assunto com sucesso")]
         public async Task AddAsync_ShouldAddAssunto_WhenValid()
         {
             var assuntoInsertDto = GenerateAssuntoInsertDto();
-            var assunto = GenerateAssunto();
-
-            _mapperMock.Setup(m => m.Map<Assunto>(assuntoInsertDto)).Returns(assunto);
-            _assuntoDomainServiceMock.Setup(s => s.AddAsync(assunto));
-
-            _mapperMock.Setup(m => m.Map<AssuntoResponseDto>(assunto)).Returns(new AssuntoResponseDto
-            {
-                CodAs = assunto.CodAs,
-                Descricao = assunto.Descricao
-            });
-
             var result = await _assuntoAppService.AddAsync(assuntoInsertDto);
 
-            result.Should().BeEquivalentTo(new AssuntoResponseDto
-            {
-                CodAs = assunto.CodAs,
-                Descricao = assunto.Descricao
-            });
+            result.Should().NotBeNull();
+            result.Descricao.Should().Be(assuntoInsertDto.Descricao);
+            result.CodAs.Should().BeGreaterThan(0);
         }
 
         [Fact(DisplayName = "Atualizar Assunto com sucesso")]
         public async Task UpdateAsync_ShouldUpdateAssunto_WhenValid()
         {
             var assuntoInsertDto = GenerateAssuntoInsertDto();
-            var assunto = GenerateAssunto();
-            var assuntoUpdateDto = GenerateAssuntoUpdateDto();
-
-            _mapperMock.Setup(m => m.Map<Assunto>(assuntoInsertDto)).Returns(assunto);
-            _assuntoDomainServiceMock.Setup(s => s.AddAsync(assunto));
-
-            _mapperMock.Setup(m => m.Map<Assunto>(assuntoUpdateDto)).Returns(assunto);
-            _assuntoDomainServiceMock.Setup(s => s.UpdateAsync(assunto));
-
-            _mapperMock.Setup(m => m.Map<AssuntoResponseDto>(assunto)).Returns(new AssuntoResponseDto
-            {
-                CodAs = assunto.CodAs,
-                Descricao = assunto.Descricao
-            });
+            var addedAssunto = await _assuntoAppService.AddAsync(assuntoInsertDto);
+            var assuntoUpdateDto = GenerateAssuntoUpdateDto(addedAssunto.CodAs);
 
             var result = await _assuntoAppService.UpdateAsync(assuntoUpdateDto);
 
-            result.Should().BeEquivalentTo(new AssuntoResponseDto
-            {
-                CodAs = assunto.CodAs,
-                Descricao = assunto.Descricao
-            });
-
-            await _assuntoDomainServiceMock.Object.DeleteAsync(assunto);
+            result.Should().NotBeNull();
+            result.CodAs.Should().Be(addedAssunto.CodAs);
+            result.Descricao.Should().Be(assuntoUpdateDto.Descricao);
         }
 
         [Fact(DisplayName = "Excluir Assunto com sucesso")]
         public async Task DeleteAsync_ShouldDeleteAssunto_WhenAssuntoExists()
         {
             var assuntoInsertDto = GenerateAssuntoInsertDto();
-            var assunto = GenerateAssunto();
-            var assuntoDeleteDto = GenerateAssuntoDeleteDto();
-
-            _mapperMock.Setup(m => m.Map<Assunto>(assuntoInsertDto)).Returns(assunto);
-            _assuntoDomainServiceMock.Setup(s => s.AddAsync(assunto));
-
-            _mapperMock.Setup(m => m.Map<Assunto>(assuntoDeleteDto)).Returns(assunto);
-            _assuntoDomainServiceMock.Setup(s => s.DeleteAsync(assunto));
-
-            _mapperMock.Setup(m => m.Map<AssuntoResponseDto>(assunto)).Returns(new AssuntoResponseDto
-            {
-                CodAs = assunto.CodAs,
-                Descricao = assunto.Descricao
-            });
+            var addedAssunto = await _assuntoAppService.AddAsync(assuntoInsertDto);
+            var assuntoDeleteDto = GenerateAssuntoDeleteDto(addedAssunto.CodAs);
 
             var result = await _assuntoAppService.DeleteAsync(assuntoDeleteDto);
 
-            result.Should().BeEquivalentTo(new AssuntoResponseDto
-            {
-                CodAs = assunto.CodAs,
-                Descricao = assunto.Descricao
-            });
+            result.Should().NotBeNull();
+            result.CodAs.Should().Be(assuntoDeleteDto.CodAs);
         }
 
         [Fact(DisplayName = "Obter Assunto por ID com sucesso")]
         public async Task GetByIdAsync_ShouldReturnAssunto_WhenAssuntoExists()
         {
-            var assunto = GenerateAssunto();
+            var assuntoInsertDto = GenerateAssuntoInsertDto();
+            var addedAssunto = await _assuntoAppService.AddAsync(assuntoInsertDto);
 
-            _assuntoDomainServiceMock.Setup(s => s.GetByIdAsync(assunto.CodAs)).ReturnsAsync(assunto);
+            var result = await _assuntoAppService.GetByIdAsync(addedAssunto.CodAs);
 
-            _mapperMock.Setup(m => m.Map<AssuntoResponseDto>(assunto)).Returns(new AssuntoResponseDto
-            {
-                CodAs = assunto.CodAs,
-                Descricao = assunto.Descricao
-            });
-
-            var result = await _assuntoAppService.GetByIdAsync(assunto.CodAs);
-
-            result.Should().BeEquivalentTo(new AssuntoResponseDto
-            {
-                CodAs = assunto.CodAs,
-                Descricao = assunto.Descricao
-            });
+            result.Should().NotBeNull();
+            result.CodAs.Should().Be(addedAssunto.CodAs);
+            result.Descricao.Should().Be(addedAssunto.Descricao);
         }
 
-        [Fact(DisplayName = "Obter Assunto por ID deve retornar null quando Assunto não encontrado")]
-        public async Task GetByIdAsync_ShouldReturnNull_WhenAssuntoNotFound()
+        [Fact(DisplayName = "Obter todos os Assuntos com sucesso")]
+        public async Task GetAllAsync_ShouldReturnAllAssuntos_WhenAssuntosExist()
         {
-            var assuntoId = new Faker().Random.Int();
+            await _assuntoAppService.AddAsync(GenerateAssuntoInsertDto());
+            await _assuntoAppService.AddAsync(GenerateAssuntoInsertDto());
 
-            _assuntoDomainServiceMock.Setup(s => s.GetByIdAsync(assuntoId)).ReturnsAsync((Assunto)null);
+            var result = await _assuntoAppService.GetAllAsync();
 
-            var result = await _assuntoAppService.GetByIdAsync(assuntoId);
+            result.Should().NotBeNull();
+            result.Count.Should().BeGreaterThan(1);
+        }
 
-            result.Should().BeNull();
+        // Tests that should fail due to validation issues
+
+        [Fact(DisplayName = "Adicionar Assunto deve falhar quando Descrição estiver vazia")]
+        public async Task AddAsync_ShouldThrowValidationException_WhenDescricaoIsEmpty()
+        {
+            var invalidAssuntoInsertDto = new AssuntoInsertDto { Descricao = "" };
+
+            Func<Task> act = async () => await _assuntoAppService.AddAsync(invalidAssuntoInsertDto);
+
+            await act.Should().ThrowAsync<ValidationException>()
+                .WithMessage("*A descrição do assunto é obrigatória.*");
+        }
+
+        [Fact(DisplayName = "Atualizar Assunto deve falhar quando Descrição estiver vazia")]
+        public async Task UpdateAsync_ShouldThrowValidationException_WhenDescricaoIsEmpty()
+        {
+            var assuntoInsertDto = GenerateAssuntoInsertDto();
+            var addedAssunto = await _assuntoAppService.AddAsync(assuntoInsertDto);
+
+            var invalidAssuntoUpdateDto = new AssuntoUpdateDto
+            {
+                CodAs = addedAssunto.CodAs,
+                Descricao = ""
+            };
+
+            Func<Task> act = async () => await _assuntoAppService.UpdateAsync(invalidAssuntoUpdateDto);
+
+            await act.Should().ThrowAsync<ValidationException>()
+                .WithMessage("*A descrição do assunto é obrigatória.*");
+        }
+
+        [Fact(DisplayName = "Atualizar Assunto deve falhar quando o código do Assunto não existe")]
+        public async Task UpdateAsync_ShouldThrowNotFoundException_WhenAssuntoDoesNotExist()
+        {
+            var invalidAssuntoUpdateDto = new AssuntoUpdateDto
+            {
+                CodAs = 9999,
+                Descricao = "Descrição Atualizada"
+            };
+
+            Func<Task> act = async () => await _assuntoAppService.UpdateAsync(invalidAssuntoUpdateDto);
+
+            await act.Should().ThrowAsync<NotFoundExceptionAssunto>()
+                .WithMessage($"Assunto {invalidAssuntoUpdateDto.CodAs} não encontrado.");
+        }
+
+        [Fact(DisplayName = "Excluir Assunto deve falhar quando o código do Assunto não existe")]
+        public async Task DeleteAsync_ShouldThrowNotFoundException_WhenAssuntoDoesNotExist()
+        {
+            var invalidAssuntoDeleteDto = new AssuntoDeleteDto { CodAs = 9999 };
+
+            Func<Task> act = async () => await _assuntoAppService.DeleteAsync(invalidAssuntoDeleteDto);
+
+            await act.Should().ThrowAsync<NotFoundExceptionAssunto>()
+                .WithMessage($"Assunto {invalidAssuntoDeleteDto.CodAs} não encontrado.");
         }
     }
 }

@@ -11,6 +11,8 @@ using System;
 using System.Threading.Tasks;
 using Xunit;
 using ValidationException = FluentValidation.ValidationException;
+using Microsoft.Extensions.Logging;
+using BibliotecaAPP.IntegrationTest.Helpers;
 
 namespace BibliotecaAPP.IntegrationTest
 {
@@ -27,7 +29,7 @@ namespace BibliotecaAPP.IntegrationTest
                 .UseInMemoryDatabase(databaseName: "BibliotecaAppTest")
                 .Options;
 
-            _context = new DataContext(options);
+            _context = new DataContext(options, new LoggerFactory().CreateLogger<DataContext>());
             _autorRepository = new AutorRepository(_context);
             _unitOfWork = new UnitOfWork(_context);
             _autorDomainService = new AutorDomainService(_unitOfWork);
@@ -35,10 +37,7 @@ namespace BibliotecaAPP.IntegrationTest
 
         private Autor GenerateValidAutor()
         {
-            return new Autor
-            {
-                Nome = "Nome Válido"
-            };
+            return AutorTestHelper.GenerateValidAutor();
         }
 
         [Fact(DisplayName = "Adicionar Autor com sucesso")]

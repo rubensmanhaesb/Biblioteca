@@ -5,10 +5,12 @@ using BibliotecaApp.Domain.Interfaces.Repositories;
 using BibliotecaApp.Domain.Services;
 using BibliotecaApp.Infra.Data.Context;
 using BibliotecaApp.Infra.Data.Repositories;
+using BibliotecaAPP.IntegrationTest.Helpers;
 using Bogus;
 using FluentAssertions;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -31,18 +33,13 @@ namespace BibliotecaAPP.IntegrationTest
                 .UseInMemoryDatabase(databaseName: "BibliotecaAppTest")
                 .Options;
 
-            var unitOfWork = new UnitOfWork(new DataContext(options));
+            var unitOfWork = new UnitOfWork(new DataContext(options, new LoggerFactory().CreateLogger<DataContext>()));
             _precoLivroDomainService = new PrecoLivroDomainService(unitOfWork);
         }
 
         private PrecoLivro GenerateValidPrecoLivro()
         {
-            return new Faker<PrecoLivro>("pt_BR")
-                .RuleFor(p => p.Codp, f => f.Random.Int(min: 1))
-                .RuleFor(p => p.LivroCodl, f => f.Random.Int(min: 1))
-                .RuleFor(p => p.Valor, f => f.Finance.Amount(1)) // Valor sempre maior que zero
-                .RuleFor(p => p.TipoCompra, f => f.PickRandom<TipoCompra>())
-                .Generate();
+            return PrecoLivroTestHelper.GenerateValidPrecoLivro();
         }
 
         [Fact(DisplayName = "Adicionar Preço de Livro com sucesso")]

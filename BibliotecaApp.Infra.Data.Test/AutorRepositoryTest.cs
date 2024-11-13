@@ -7,6 +7,7 @@ using System;
 using System.Threading.Tasks;
 using Xunit;
 using BibliotecaApp.Infra.Data.Context;
+using Microsoft.Extensions.Logging;
 
 namespace BibliotecaApp.Infra.Data.Test
 {
@@ -21,7 +22,7 @@ namespace BibliotecaApp.Infra.Data.Test
                 .UseInMemoryDatabase(databaseName: "BibliotecaAppTest")
                 .Options;
 
-            _context = new DataContext(options);
+            _context = new DataContext(options, new LoggerFactory().CreateLogger<DataContext>());
             _autorRepository = new AutorRepository(_context);
         }
 

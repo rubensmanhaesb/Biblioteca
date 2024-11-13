@@ -1,13 +1,16 @@
 ﻿using BibliotecaApp.Domain.Entities;
 using BibliotecaApp.Domain.Exceptions;
 using BibliotecaApp.Domain.Interfaces.Repositories;
+using BibliotecaApp.Domain.Interfaces.Services;
 using BibliotecaApp.Domain.Services;
 using BibliotecaApp.Infra.Data.Context;
 using BibliotecaApp.Infra.Data.Repositories;
+using BibliotecaAPP.IntegrationTest.Helpers;
 using Bogus;
 using FluentAssertions;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -21,6 +24,7 @@ namespace BibliotecaAPP.IntegrationTest
     {
         private readonly Mock<IValidator<LivroAutor>> _validatorMock;
         private readonly LivroAutorDomainService _livroAutorDomainService;
+        private readonly UnitOfWork _unitOfWork;
         private readonly DataContext _dataContext;
 
         public LivroAutorDomainServiceTest()
@@ -31,19 +35,15 @@ namespace BibliotecaAPP.IntegrationTest
                 .UseInMemoryDatabase(databaseName: "BibliotecaAppTest")
                 .Options;
 
-            _dataContext = new DataContext(options);
+            _dataContext = new DataContext(options, new LoggerFactory().CreateLogger<DataContext>());
+            _unitOfWork = new UnitOfWork(_dataContext);
 
-            _livroAutorDomainService = new LivroAutorDomainService(
-                 new UnitOfWork(_dataContext),
-                _validatorMock.Object);
+            _livroAutorDomainService = new LivroAutorDomainService( _unitOfWork, _validatorMock.Object);
         }
 
         private LivroAutor GenerateValidLivroAutor()
         {
-            return new Faker<LivroAutor>("pt_BR")
-                .RuleFor(la => la.LivroCodl, f => f.Random.Int())
-                .RuleFor(la => la.AutorCodAu, f => f.Random.Int())
-                .Generate();
+            return LivroAutorTestHelper.GenerateValidLivroAutor(_unitOfWork).Result;
         }
 
         [Fact(DisplayName = "Adicionar LivroAutor com sucesso")]
@@ -60,24 +60,32 @@ namespace BibliotecaAPP.IntegrationTest
             result.Should().BeEquivalentTo(newLivroAutor);
         }
 
-        [Fact(DisplayName = "Adicionar LivroAutor deve falhar na validação")]
-        public async Task AddAsync_ShouldThrowValidationException_WhenInvalid()
+        [Fact(DisplayName = "Adicionar LivroAutor deve falhar na quando livro não existente ")]
+        public async Task AddAsync_ShouldThrowValidationException_WhenBookNotFoun()
         {
-            var newLivroAutor = new LivroAutor { LivroCodl = new Random().Next() };
-            var validationErrors = new List<FluentValidation.Results.ValidationFailure>
-            {
-                new FluentValidation.Results.ValidationFailure("AutorCodAu", "O código do autor é obrigatório.")
-            };
-
-            _validatorMock.Setup(v => v.ValidateAsync(newLivroAutor, default))
-                .ReturnsAsync(new FluentValidation.Results.ValidationResult(validationErrors));
+            var newLivroAutor = GenerateValidLivroAutor();
+            newLivroAutor.LivroCodl = 900;
 
             Func<Task> act = async () => await _livroAutorDomainService.AddAsync(newLivroAutor);
 
-            var exception = await act.Should().ThrowAsync<FluentValidation.ValidationException>();
-            exception.Which.Errors.Should().ContainSingle()
-                .Which.ErrorMessage.Should().Be("O código do autor é obrigatório.");
+
+            await act.Should().ThrowAsync<NotFoundExceptionLivro>()
+                .WithMessage($"Livro {newLivroAutor.LivroCodl} não encontrado.");
         }
+
+        [Fact(DisplayName = "Adicionar LivroAutor deve falhar na quando autor não existente ")]
+        public async Task AddAsync_ShouldThrowValidationException_WhenActorNotFoun()
+        {
+            var newLivroAutor = GenerateValidLivroAutor();
+            newLivroAutor.AutorCodAu = 900;
+
+            Func<Task> act = async () => await _livroAutorDomainService.AddAsync(newLivroAutor);
+
+
+            await act.Should().ThrowAsync<NotFoundExceptionAutor>()
+                .WithMessage($"Autor {newLivroAutor.AutorCodAu} não encontrado.");
+        }
+
 
         [Fact(DisplayName = "Atualizar LivroAutor com sucesso")]
         public async Task UpdateAsync_ShouldUpdateLivroAutor_WhenValid()
@@ -88,7 +96,8 @@ namespace BibliotecaAPP.IntegrationTest
                 .ReturnsAsync(new FluentValidation.Results.ValidationResult());
 
             var resultInclusao = await _livroAutorDomainService.AddAsync(newLivroAutor);
-            _dataContext.ChangeTracker.Clear();
+            _unitOfWork.DataContext.Entry(newLivroAutor).State = EntityState.Detached;
+
 
             var updatedLivroAutor = new LivroAutor
             {
@@ -101,30 +110,26 @@ namespace BibliotecaAPP.IntegrationTest
             _validatorMock.Setup(v => v.ValidateAsync(updatedLivroAutor, default))
                 .ReturnsAsync(new FluentValidation.Results.ValidationResult());
 
+
+            _unitOfWork.DataContext.Entry(updatedLivroAutor).State = EntityState.Detached;
             var result = await _livroAutorDomainService.UpdateAsync(updatedLivroAutor);
 
             result.Should().NotBeNull();
             result.Should().BeEquivalentTo(updatedLivroAutor);
         }
 
-        [Fact(DisplayName = "Atualizar LivroAutor deve falhar na validação")]
-        public async Task UpdateAsync_ShouldThrowValidationException_WhenInvalid()
+
+        [Fact(DisplayName = "Atualizar LivroAutor deve falhar quando LivroAutor não encontrado")]
+        public async Task UpdateAsync_ShouldThrowAutorNotFoundException_WhenAutorNotFound()
         {
-            var livroAutor = new LivroAutor { AutorCodAu = new Random().Next() };
-            var validationErrors = new List<FluentValidation.Results.ValidationFailure>
-            {
-                new FluentValidation.Results.ValidationFailure("LivroCodl", "O código do livro é obrigatório.")
-            };
+            var newLivroAutor = GenerateValidLivroAutor();
 
-            _validatorMock.Setup(v => v.ValidateAsync(livroAutor, default))
-                .ReturnsAsync(new FluentValidation.Results.ValidationResult(validationErrors));
+            Func<Task> act = async () => await _livroAutorDomainService.UpdateAsync(newLivroAutor);
 
-            Func<Task> act = async () => await _livroAutorDomainService.UpdateAsync(livroAutor);
-
-            var exception = await act.Should().ThrowAsync<FluentValidation.ValidationException>();
-            exception.Which.Errors.Should().ContainSingle()
-                .Which.ErrorMessage.Should().Be("O código do livro é obrigatório.");
+            var exception = await act.Should().ThrowAsync<NotFoundExceptionLivroAutor>()
+                .WithMessage($"Livro Autor {newLivroAutor.LivroCodl} e {newLivroAutor.AutorCodAu} não encontrado.");
         }
+
 
         [Fact(DisplayName = "Excluir LivroAutor deve falhar quando LivroAutor não encontrado")]
         public async Task DeleteAsync_ShouldThrowLivroAutorNotFoundException_WhenLivroAutorNotFound()

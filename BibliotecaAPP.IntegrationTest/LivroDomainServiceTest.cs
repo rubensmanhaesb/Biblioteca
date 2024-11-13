@@ -15,13 +15,14 @@ using Xunit;
 using ValidationException = FluentValidation.ValidationException;
 using BibliotecaApp.Aplication.Dtos;
 using BibliotecaApp.Domain.Interfaces.Services;
+using Microsoft.Extensions.Logging;
+using BibliotecaAPP.IntegrationTest.Helpers;
 
 namespace BibliotecaAPP.IntegrationTest
 {
     public class LivroDomainServiceTest
     {
         private readonly LivroDomainService _livroDomainService;
-        private readonly ILivroRepository _livroRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly DataContext _context;
 
@@ -31,21 +32,14 @@ namespace BibliotecaAPP.IntegrationTest
                 .UseInMemoryDatabase(databaseName: "BibliotecaAppTest")
                 .Options;
 
-            _context = new DataContext(options);
-            _livroRepository = new LivroRepository(_context);
+            _context = new DataContext(options, new LoggerFactory().CreateLogger<DataContext>());
             _unitOfWork = new UnitOfWork(_context);
             _livroDomainService = new LivroDomainService(_unitOfWork);
         }
 
         private Livro GenerateValidLivro()
         {
-            return new Faker<Livro>("pt_BR")
-                //.RuleFor(l => l.Codl, f => f.Random.Int(1, 10000)) // é identity não deve ser gerado
-                .RuleFor(l => l.Titulo, f => f.Company.CompanyName())
-                .RuleFor(l => l.Editora, f => f.Company.CompanyName())
-                .RuleFor(l => l.Edicao, f => f.Random.Int(1, 10))
-                .RuleFor(l => l.AnoPublicacao, f => f.Date.Past(20).Year.ToString())
-                .Generate();
+            return LivroTestHelper.GenerateValidLivro();
         }
 
         [Fact(DisplayName = "Adicionar Livro com sucesso")]
@@ -58,6 +52,8 @@ namespace BibliotecaAPP.IntegrationTest
             result.Should().NotBeNull();
             result.Titulo.Should().Be(newLivro.Titulo);
             result.Editora.Should().Be(newLivro.Editora);
+
+
         }
 
         [Fact(DisplayName = "Adicionar Livro deve falhar quando informado o codL")]
@@ -299,9 +295,9 @@ namespace BibliotecaAPP.IntegrationTest
         [Fact(DisplayName = "Consultar todos os livros")]
         public async Task GetManyAsync_ShouldReturnLivros_WhenLivrosExist()
         {
-            var livro1 = GenerateValidLivro();
+           // var livro1 = GenerateValidLivro();
 
-            var addedLivro = await _livroDomainService.AddAsync(livro1);
+           // var addedLivro = await _livroDomainService.AddAsync(livro1);
 
 
             await AddAsync_ShouldAddLivro_WhenValid(); 

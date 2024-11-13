@@ -13,6 +13,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 using ValidationException = FluentValidation.ValidationException;
+using Microsoft.Extensions.Logging;
+using BibliotecaAPP.IntegrationTest.Helpers;
 
 namespace BibliotecaAPP.IntegrationTest
 {
@@ -29,7 +31,7 @@ namespace BibliotecaAPP.IntegrationTest
                 .UseInMemoryDatabase(databaseName: "BibliotecaAppTest")
                 .Options;
 
-            _context = new DataContext(options);
+            _context = new DataContext(options, new LoggerFactory().CreateLogger<DataContext>());
             _assuntoRepository = new AssuntoRepository(_context);
             _unitOfWork = new UnitOfWork(_context);
             _assuntoDomainService = new AssuntoDomainService(_unitOfWork);
@@ -37,17 +39,13 @@ namespace BibliotecaAPP.IntegrationTest
 
         private Assunto GenerateValidAssunto()
         {
-            return new Faker<Assunto>("pt_BR")
-                .RuleFor(a => a.CodAs, f => f.Random.Int(1, 10000))
-                .RuleFor(a => a.Descricao, f => f.Lorem.Letter(20))
-                .Generate();
+            return AssuntoTestHelper.GenerateValidAssunto();
         }
 
         [Fact(DisplayName = "Adicionar Assunto com sucesso")]
         public async Task AddAsync_ShouldAddAssunto_WhenValid()
         {
             var newAssunto = GenerateValidAssunto();
-            newAssunto.CodAs = 0;
 
             var result = await _assuntoDomainService.AddAsync(newAssunto);
 
@@ -70,7 +68,7 @@ namespace BibliotecaAPP.IntegrationTest
         public async Task UpdateAsync_ShouldUpdateAssunto_WhenValid()
         {
             var assunto = GenerateValidAssunto();
-            assunto.CodAs = 0;
+
             var addedAssunto = await _assuntoDomainService.AddAsync(assunto);
 
             addedAssunto.Descricao = "Descrição Alterada";
@@ -85,7 +83,7 @@ namespace BibliotecaAPP.IntegrationTest
         public async Task UpdateAsync_ShouldThrowValidationException_WhenInvalid()
         {
             var assunto = GenerateValidAssunto();
-            assunto.CodAs = 0;
+
             await _assuntoDomainService.AddAsync(assunto);
             assunto.Descricao = "";
 
@@ -123,7 +121,7 @@ namespace BibliotecaAPP.IntegrationTest
         public async Task GetByIdAsync_ShouldReturnAssunto_WhenAssuntoExists()
         {
             var assunto = GenerateValidAssunto();
-            assunto.CodAs = 0;
+
             var addedAssunto = await _assuntoDomainService.AddAsync(assunto);
 
             var result = await _assuntoDomainService.GetByIdAsync(addedAssunto.CodAs);
