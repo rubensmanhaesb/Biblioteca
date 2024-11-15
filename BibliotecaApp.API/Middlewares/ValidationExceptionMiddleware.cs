@@ -27,7 +27,7 @@ namespace BibliotecaApp.API.Middlewares
 
         private static Task HandleValidationExceptionAsync(HttpContext context, ValidationException exception)
         {
-            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
             context.Response.ContentType = "application/json";
 
             var errors = exception.Errors

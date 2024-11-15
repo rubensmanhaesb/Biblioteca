@@ -15,6 +15,7 @@ namespace BibliotecaApp.Infra.Data.Test
     {
         private readonly DataContext _context;
         private readonly AutorRepository _autorRepository;
+        private readonly ILogger<DataContext> _logger;
 
         public AutorRepositoryTest()
         {
@@ -22,7 +23,9 @@ namespace BibliotecaApp.Infra.Data.Test
                 .UseInMemoryDatabase(databaseName: "BibliotecaAppTest")
                 .Options;
 
-            _context = new DataContext(options, new LoggerFactory().CreateLogger<DataContext>());
+            _logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<DataContext>();
+            _context = new DataContext(options, _logger);
+
             _autorRepository = new AutorRepository(_context);
         }
 

@@ -25,9 +25,9 @@ namespace BibliotecaApp.Infra.Data.Context
         public CircuitState CircuitBreakerState => circuitBreakerPolicy.CircuitState;
 
         #region Constructors
-        public DataContext(DbContextOptions<DataContext> options) : base(options) {
+        //public DataContext(DbContextOptions<DataContext> options) : base(options) {
             
-        }
+        //}
         public DataContext(DbContextOptions<DataContext> options, ILogger<DataContext> logger) : base(options)
         {
             _logger = logger;

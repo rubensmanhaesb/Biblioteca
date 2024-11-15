@@ -19,6 +19,7 @@ namespace BibliotecaApp.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(AssuntoResponseDto), 201)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> Post([FromBody] AssuntoInsertDto request)
         {
             return StatusCode(201, await _assuntoAppService.AddAsync(request));
@@ -26,6 +27,7 @@ namespace BibliotecaApp.API.Controllers
 
         [HttpPut]
         [ProducesResponseType(typeof(AssuntoResponseDto), 200)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> Put([FromBody] AssuntoUpdateDto request)
         {
             return StatusCode(200, await _assuntoAppService.UpdateAsync(request));
@@ -33,6 +35,7 @@ namespace BibliotecaApp.API.Controllers
 
         [HttpDelete]
         [ProducesResponseType(typeof(AssuntoResponseDto), 200)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> Delete(AssuntoDeleteDto request)
         {
             return StatusCode(200, await _assuntoAppService.DeleteAsync(request));
@@ -47,6 +50,7 @@ namespace BibliotecaApp.API.Controllers
 
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(AssuntoResponseDto), 200)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> GetById(int id)
         {
             return StatusCode(200, await _assuntoAppService.GetByIdAsync(id));

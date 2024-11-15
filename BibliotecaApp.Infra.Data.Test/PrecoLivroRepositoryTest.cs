@@ -3,6 +3,7 @@ using BibliotecaApp.Infra.Data.Context;
 using BibliotecaApp.Infra.Data.Repositories;
 using Bogus;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 using Xunit;
@@ -14,6 +15,7 @@ namespace BibliotecaApp.Infra.Data.Test
         private readonly DataContext _context;
         private readonly PrecoLivroRepository _precoLivroRepository;
         private readonly Faker<PrecoLivro> _faker;
+        private readonly ILogger<DataContext> _logger;
 
         public PrecoLivroRepositoryTest()
         {
@@ -21,7 +23,9 @@ namespace BibliotecaApp.Infra.Data.Test
                 .UseInMemoryDatabase(databaseName: "BibliotecaAppTest")
                 .Options;
 
-            _context = new DataContext(options);
+            _logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<DataContext>();
+            _context = new DataContext(options, _logger);
+
             _precoLivroRepository = new PrecoLivroRepository(_context);
 
             _faker = new Faker<PrecoLivro>()

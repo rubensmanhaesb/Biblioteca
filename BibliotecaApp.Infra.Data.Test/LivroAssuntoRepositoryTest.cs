@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Xunit;
 using BibliotecaApp.Infra.Data.Context;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BibliotecaApp.Infra.Data.Test
 {
@@ -14,14 +16,16 @@ namespace BibliotecaApp.Infra.Data.Test
     {
         private readonly DataContext _context;
         private readonly LivroAssuntoRepository _livroAssuntoRepository;
+        private readonly ILogger<DataContext> _logger;
 
         public LivroAssuntoRepositoryTest()
         {
             var options = new DbContextOptionsBuilder<DataContext>()
                 .UseInMemoryDatabase(databaseName: "BibliotecaAppTest")
                 .Options;
-
-            _context = new DataContext(options);
+            
+            _logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<DataContext>();
+            _context = new DataContext(options, _logger);
             _livroAssuntoRepository = new LivroAssuntoRepository(_context);
         }
 

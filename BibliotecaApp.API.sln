@@ -38,6 +38,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BibliotecaApp.Infra.Data.Te
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BibliotecaAPP.IntegrationTest", "BibliotecaAPP.IntegrationTest\BibliotecaAPP.IntegrationTest.csproj", "{274DE7F7-3F19-4769-A05F-13611738EED6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{CBC32509-771D-4AFC-9233-77F031CCD05B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BibliotecaApp.API.Tests", "BibliotecaApp.API.Tests\BibliotecaApp.API.Tests.csproj", "{26973672-3348-4E3C-BB73-3B240806DD90}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,6 +76,10 @@ Global
 		{274DE7F7-3F19-4769-A05F-13611738EED6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{274DE7F7-3F19-4769-A05F-13611738EED6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{274DE7F7-3F19-4769-A05F-13611738EED6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{26973672-3348-4E3C-BB73-3B240806DD90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26973672-3348-4E3C-BB73-3B240806DD90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26973672-3348-4E3C-BB73-3B240806DD90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26973672-3348-4E3C-BB73-3B240806DD90}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -90,6 +98,8 @@ Global
 		{D723CDBB-764B-44E8-9F42-30F9BFA5AD33} = {C43E7F8C-0CF0-41B2-97CA-E08F9ADD3C66}
 		{17B1574F-B30E-426F-BA49-ECC200A90C7A} = {A5E6A1E0-169C-425D-8ABF-95A976631318}
 		{274DE7F7-3F19-4769-A05F-13611738EED6} = {2C9E7453-ECED-43AE-87B5-48D7C21059E6}
+		{CBC32509-771D-4AFC-9233-77F031CCD05B} = {14EF6184-BFB9-4A40-B451-D062859259D6}
+		{26973672-3348-4E3C-BB73-3B240806DD90} = {CBC32509-771D-4AFC-9233-77F031CCD05B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {05D7EE72-6B47-4BF0-9929-24B04DFD4FEF}
