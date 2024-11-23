@@ -30,6 +30,7 @@ namespace BibliotecaApp.API.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> Put([FromBody] AssuntoUpdateDto request)
         {
+            Console.WriteLine($"Recebido PUT para CodAs: {request.CodAs} com Descricao: {request.Descricao}");
             return StatusCode(200, await _assuntoAppService.UpdateAsync(request));
         }
 

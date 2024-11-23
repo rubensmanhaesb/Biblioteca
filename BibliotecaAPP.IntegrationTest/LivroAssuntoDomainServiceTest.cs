@@ -167,7 +167,7 @@ namespace BibliotecaAPP.IntegrationTest
 
             var resultInclusao = await _livroAssuntoDomainService.AddAsync(newLivroAssunto);
 
-            var result = await _livroAssuntoDomainService.GetByIdAsync(newLivroAssunto.Pk());
+            var result = await _livroAssuntoDomainService.GetByIdAsync(newLivroAssunto.Pk);
 
             result.Should().NotBeNull();
             result.Should().BeEquivalentTo(newLivroAssunto);
@@ -178,7 +178,7 @@ namespace BibliotecaAPP.IntegrationTest
         {
             var newLivroAssunto = new LivroAssunto { LivroCodl = new Random().Next(), AssuntoCodAs = new Random().Next() };
 
-            var result = await _livroAssuntoDomainService.GetByIdAsync(newLivroAssunto.Pk());
+            var result = await _livroAssuntoDomainService.GetByIdAsync(newLivroAssunto.Pk);
 
             result.Should().BeNull();
         }

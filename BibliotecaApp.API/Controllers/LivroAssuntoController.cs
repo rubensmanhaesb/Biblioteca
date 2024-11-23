@@ -36,9 +36,9 @@ namespace BibliotecaApp.API.Controllers
             return StatusCode(200, await _livroAssuntoAppService.GetAllAsync());
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{LivroCodl}/{AssuntoCodAs}")]
         [ProducesResponseType(typeof(LivroAssuntoResponseDto), 200)]
-        public async Task<IActionResult> GetById(LivroAssuntoPkDto id)
+        public async Task<IActionResult> GetById([FromRoute] LivroAssuntoPkDto id)
         {
             return StatusCode(200, await _livroAssuntoAppService.GetByIdAsync(id));
         }

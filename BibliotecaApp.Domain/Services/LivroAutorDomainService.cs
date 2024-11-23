@@ -72,7 +72,7 @@ namespace BibliotecaApp.Domain.Services
 
         public async override Task<LivroAutor> DeleteAsync(LivroAutor entity)
         {
-            var existingLivroAutor = EnsureLivroAutorExistsAsync(entity.Pk).Result;
+            var existingLivroAutor = await EnsureLivroAutorExistsAsync(entity.Pk);
 
             await _unitOfWork.LivroAutorRepository.Delete(existingLivroAutor);
             await _unitOfWork.SaveChanges();

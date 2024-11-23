@@ -21,11 +21,38 @@ namespace BibliotecaApp.Domain.Services
             _validator = validator;
         }
 
+        public async Task<LivroAssunto> EnsureLivroAssuntoExistsAsync(LivroAssuntoPk pk)
+        {
+            var existingLivroAssunto = await _livroAssuntoRepository.GetById(pk);
+            if (existingLivroAssunto == null)
+                throw new NotFoundExceptionLivroAssunto(pk.LivroCodl, pk.AssuntoCodAs);
+
+            _unitOfWork.DataContext.Entry(existingLivroAssunto).State = EntityState.Detached;
+            return existingLivroAssunto;
+        }
+        private async Task EnsureLivroExistsAsync(int livroCodl)
+        {
+            var livro = await _unitOfWork.LivroRepository.GetById(livroCodl);
+            if (livro == null)
+                throw new NotFoundExceptionLivro(livroCodl);
+        }
+
+        private async Task EnsureAssuntoExistsAsync(int assuntoCodAs)
+        {
+            var assunto = await _unitOfWork.AssuntoRepository.GetById(assuntoCodAs);
+            if (assunto == null)
+                throw new NotFoundExceptionAssunto(assuntoCodAs);
+        }
+
+
         public async override Task<LivroAssunto> AddAsync(LivroAssunto entity)
         {
+            await EnsureAssuntoExistsAsync(entity.AssuntoCodAs);
+            await EnsureLivroExistsAsync(entity.LivroCodl);
+
             await ValidateEntity(entity);
 
-            var existingLivroAssunto = await _livroAssuntoRepository.GetById(entity.Pk());
+            var existingLivroAssunto = await _livroAssuntoRepository.GetById(entity.Pk);
             if (existingLivroAssunto != null)
                 throw new RecordAlreadyExistsExceptionLivroAssunto(entity.LivroCodl, entity.AssuntoCodAs);
 
@@ -45,11 +72,7 @@ namespace BibliotecaApp.Domain.Services
 
         public async override Task<LivroAssunto> DeleteAsync(LivroAssunto entity)
         {
-            var pk = new LivroAssuntoPk { AssuntoCodAs = entity.AssuntoCodAs, LivroCodl = entity.LivroCodl };
-            var livroAssunto = await _livroAssuntoRepository.GetById(pk);
-
-            if (livroAssunto == null)
-                throw new NotFoundExceptionLivroAssunto(entity.LivroCodl, entity.AssuntoCodAs);
+            var livroAssunto = await EnsureLivroAssuntoExistsAsync(entity.Pk);
 
             await _livroAssuntoRepository.Delete(livroAssunto);
             await _unitOfWork.SaveChanges();

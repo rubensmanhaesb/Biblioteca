@@ -21,12 +21,12 @@ builder.Services.AddJwtConfig(builder.Configuration);
 var app = builder.Build();
 
 #region Middlewares
-app.UseMiddleware<ExceptionMiddleware>();
 app.UseMiddleware<CircuitBreakerMiddleware>();
 app.UseMiddleware<RetryMiddleware>();
 app.UseMiddleware<ValidationExceptionMiddleware>();
 app.UseMiddleware<NotFoundExceptionMiddleware>();
 app.UseMiddleware<RecordAlreadyExistsExceptionMiddleware>();
+//app.UseMiddleware<ExceptionMiddleware>();
 #endregion 
 
 builder.Services.AddEndpointsApiExplorer();

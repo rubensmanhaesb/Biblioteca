@@ -16,14 +16,11 @@ namespace BibliotecaApp.Domain.Entities
         public Assunto Assunto { get; set; }
         #endregion
 
-        public LivroAssuntoPk Pk()
+        public LivroAssuntoPk Pk => new LivroAssuntoPk
         {
-            return new LivroAssuntoPk
-            {
-                LivroCodl = LivroCodl,
-                AssuntoCodAs = AssuntoCodAs
-            };
-        }
+            LivroCodl = LivroCodl,
+            AssuntoCodAs = AssuntoCodAs
+        };
     }
 
     public class LivroAssuntoPk

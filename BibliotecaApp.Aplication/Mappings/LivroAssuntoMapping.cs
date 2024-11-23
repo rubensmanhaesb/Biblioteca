@@ -18,8 +18,7 @@ namespace BibliotecaApp.Aplication.Mappings
 
             CreateMap<LivroAssunto, LivroAssuntoResponseDto>();
             CreateMap<LivroAssuntoDto, LivroAssuntoResponseDto>().ReverseMap();
-            CreateMap<LivroAssuntoPkDto, LivroAssuntoPk>();
-
+            CreateMap<LivroAssuntoPkDto, LivroAssuntoPk>().ReverseMap(); 
 
         }
     }

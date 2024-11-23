@@ -36,7 +36,7 @@ namespace BibliotecaApp.Domain.Validation
 
                 case TipoOperacao.Alteracao:
                     RuleFor(x => x.CodAs )
-                        .GreaterThan(1).WithMessage("Código do assunto deve ser informado na alteração.");
+                        .GreaterThan(0).WithMessage("Código do assunto deve ser informado na alteração.");
                     break;
 
                 case TipoOperacao.Delecao:
