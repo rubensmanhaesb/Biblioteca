@@ -50,23 +50,40 @@ namespace BibliotecaApp.Aplication.Test.Services
                 .Generate();
         }
 
+
+        private async Task<(LivroAssuntoDto, LivroAssuntoResponseDto)> ExecuteAddLivroAssuntoRoutineAsync()
+        {
+            var livroAssuntoDto = GenerateLivroAssuntoDto();
+            var livroAssunto = GenerateLivroAssunto();
+            var livroAssuntoResponseDto = GenerateLivroAssuntoResponseDto();// para configurar o mock
+
+
+            _mapperMock.Setup(m => m.Map<LivroAssunto>(livroAssuntoDto)).Returns(new LivroAssunto
+            {
+                LivroCodl = livroAssuntoDto.LivroCodl,
+                AssuntoCodAs = livroAssuntoDto.AssuntoCodAs
+            });
+
+            _livroAssuntoDomainServiceMock.Setup(s => s.AddAsync(livroAssunto));
+
+            _mapperMock.Setup(m => m.Map<LivroAssuntoResponseDto>(It.IsAny<LivroAssunto>())).Returns<LivroAssunto>(la => new LivroAssuntoResponseDto
+            {
+                LivroCodl = la.LivroCodl,
+                AssuntoCodAs = la.AssuntoCodAs
+            });
+
+            var result =  await _livroAssuntoAppService.AddAsync(livroAssuntoDto);
+            
+            return (livroAssuntoDto, result );
+
+        }
+
         [Fact(DisplayName = "Adicionar LivroAssunto com sucesso")]
         public async Task AddAsync_ShouldAddLivroAssunto_WhenValid()
         {
-            // Arrange
-            var livroAssuntoDto = GenerateLivroAssuntoDto();
-            var livroAssunto = GenerateLivroAssunto();
-            var livroAssuntoResponseDto = GenerateLivroAssuntoResponseDto();
+            var (livroAssunto, result) = await ExecuteAddLivroAssuntoRoutineAsync(); 
 
-            _mapperMock.Setup(m => m.Map<LivroAssunto>(livroAssuntoDto)).Returns(livroAssunto);
-            _livroAssuntoDomainServiceMock.Setup(s => s.AddAsync(livroAssunto));
-            _mapperMock.Setup(m => m.Map<LivroAssuntoResponseDto>(livroAssunto)).Returns(livroAssuntoResponseDto);
-
-            // Act
-            var result = await _livroAssuntoAppService.AddAsync(livroAssuntoDto);
-
-            // Assert
-            result.Should().BeEquivalentTo(livroAssuntoResponseDto);
+            result.Should().BeEquivalentTo(livroAssunto);
         }
 
         [Fact(DisplayName = "Adicionar LivroAssunto deve falhar quando dados são inválidos")]
@@ -125,20 +142,40 @@ namespace BibliotecaApp.Aplication.Test.Services
         [Fact(DisplayName = "Excluir LivroAssunto com sucesso")]
         public async Task DeleteAsync_ShouldDeleteLivroAssunto_WhenLivroAssuntoExists()
         {
-            // Arrange
-            var livroAssuntoDto = GenerateLivroAssuntoDto();
-            var livroAssunto = GenerateLivroAssunto();
-            var livroAssuntoResponseDto = GenerateLivroAssuntoResponseDto();
 
-            _mapperMock.Setup(m => m.Map<LivroAssunto>(livroAssuntoDto)).Returns(livroAssunto);
-            _livroAssuntoDomainServiceMock.Setup(s => s.DeleteAsync(livroAssunto));
-            _mapperMock.Setup(m => m.Map<LivroAssuntoResponseDto>(livroAssunto)).Returns(livroAssuntoResponseDto);
+                var (livroAssuntoDtoOriginal, livroAssuntoResponseDtoIncluido) = await ExecuteAddLivroAssuntoRoutineAsync();
 
-            // Act
-            var result = await _livroAssuntoAppService.DeleteAsync(livroAssuntoDto);
+                var livroAssunto = new LivroAssunto
+                {
+                    LivroCodl = livroAssuntoDtoOriginal.LivroCodl,
+                    AssuntoCodAs = livroAssuntoDtoOriginal.AssuntoCodAs
+                };
 
-            // Assert
-            result.Should().BeEquivalentTo(livroAssuntoResponseDto);
+                // Configurar o mock para GetByIdAsync
+                _livroAssuntoDomainServiceMock
+                    .Setup(s => s.GetByIdAsync(It.Is<LivroAssuntoPk>(pk =>
+                        pk.LivroCodl == livroAssuntoDtoOriginal.LivroCodl &&
+                        pk.AssuntoCodAs == livroAssuntoDtoOriginal.AssuntoCodAs)))
+                    .ReturnsAsync(livroAssunto);
+
+                // Configurar o mock para DeleteAsync
+                _livroAssuntoDomainServiceMock.Setup(s => s.DeleteAsync(It.IsAny<LivroAssunto>()));
+
+                // Configurar o mapeamento para o DTO de resposta
+                _mapperMock.Setup(m => m.Map<LivroAssuntoResponseDto>(livroAssunto)).Returns(livroAssuntoResponseDtoIncluido);
+
+                // Act: Executa o método de exclusão
+                var result = await _livroAssuntoAppService.DeleteAsync(livroAssuntoDtoOriginal);
+
+                // Assert: Verifica o resultado da exclusão
+                result.Should().BeEquivalentTo(livroAssuntoResponseDtoIncluido);
+
+                // Verificar que GetByIdAsync foi chamado corretamente
+                _livroAssuntoDomainServiceMock.Verify(s => s.GetByIdAsync(It.IsAny<LivroAssuntoPk>()), Times.Once);
+
+                // Verificar que DeleteAsync foi chamado
+                _livroAssuntoDomainServiceMock.Verify(s => s.DeleteAsync(It.IsAny<LivroAssunto>()), Times.Once);
+
         }
 
         [Fact(DisplayName = "Excluir LivroAssunto deve falhar quando não encontrado")]

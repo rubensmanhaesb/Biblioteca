@@ -4,6 +4,8 @@ using BibliotecaApp.Domain.Interfaces.Repositories;
 using BibliotecaApp.Domain.Interfaces.Services;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BibliotecaApp.Domain.Services
@@ -36,14 +38,12 @@ namespace BibliotecaApp.Domain.Services
             if (livro == null)
                 throw new NotFoundExceptionLivro(livroCodl);
         }
-
         private async Task EnsureAssuntoExistsAsync(int assuntoCodAs)
         {
             var assunto = await _unitOfWork.AssuntoRepository.GetById(assuntoCodAs);
             if (assunto == null)
                 throw new NotFoundExceptionAssunto(assuntoCodAs);
         }
-
 
         public async override Task<LivroAssunto> AddAsync(LivroAssunto entity)
         {
@@ -86,5 +86,43 @@ namespace BibliotecaApp.Domain.Services
                 throw new ValidationException(validationResult.Errors);
             _unitOfWork.DataContext.Entry(entity).State = EntityState.Detached;
         }
+
+        public async override Task<List<LivroAssunto>>? GetAllAsync()
+        {
+            return (List<LivroAssunto>) await _livroAssuntoRepository.GetByConditionAsync(
+                pageSize:10, 
+                pageNumber:1 ,  
+                predicate:null, 
+                orderBy:null, 
+                isAscending:true,
+                includes: new Expression<Func<LivroAssunto, object>>[]
+                {
+                    la => la.Livro,
+                    la => la.Assunto
+                },
+                cancellationToken:default);
+        }
+
+        public async override Task<LivroAssunto>? GetByIdAsync(LivroAssuntoPk id)
+        {
+            var result = await _livroAssuntoRepository.GetByConditionAsync(
+                pageSize: 10,
+                pageNumber: 1,
+                predicate:
+                    la => la.LivroCodl == id.LivroCodl &&
+                    la.AssuntoCodAs == id.AssuntoCodAs
+                ,
+                orderBy: null,
+                isAscending: true,
+                includes: new Expression<Func<LivroAssunto, object>>[]
+                {
+                    la => la.Livro,
+                    la => la.Assunto
+                },
+                cancellationToken: default);
+
+            return result.FirstOrDefault();
+        }
+
     }
 }

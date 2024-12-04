@@ -63,20 +63,15 @@ namespace BibliotecaAPP.IntegrationTest
         [Fact(DisplayName = "Adicionar LivroAssunto deve falhar na validação")]
         public async Task AddAsync_ShouldThrowValidationException_WhenInvalid()
         {
-            var newLivroAssunto = new LivroAssunto { LivroCodl = new Random().Next() };
-            var validationErrors = new List<FluentValidation.Results.ValidationFailure>
-            {
-                new FluentValidation.Results.ValidationFailure("AssuntoCodAs", "O código do assunto é obrigatório.")
-            };
+            var newLivroAssunto = GenerateValidLivroAssunto();
 
-            _validatorMock.Setup(v => v.ValidateAsync(newLivroAssunto, default))
-                .ReturnsAsync(new FluentValidation.Results.ValidationResult(validationErrors));
+            newLivroAssunto.AssuntoCodAs = new Random().Next();
 
             Func<Task> act = async () => await _livroAssuntoDomainService.AddAsync(newLivroAssunto);
 
-            var exception = await act.Should().ThrowAsync<FluentValidation.ValidationException>();
-            exception.Which.Errors.Should().ContainSingle()
-                .Which.ErrorMessage.Should().Be("O código do assunto é obrigatório.");
+
+            await act.Should().ThrowAsync<NotFoundExceptionAssunto>()
+                .WithMessage($"Assunto {newLivroAssunto.AssuntoCodAs} não encontrado.");
         }
 
         [Fact(DisplayName = "Atualizar LivroAssunto com sucesso")]

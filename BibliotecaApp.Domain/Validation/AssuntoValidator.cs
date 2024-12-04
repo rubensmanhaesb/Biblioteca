@@ -41,7 +41,7 @@ namespace BibliotecaApp.Domain.Validation
 
                 case TipoOperacao.Delecao:
                     RuleFor(x => x.CodAs)
-                        .GreaterThan(1).WithMessage("Código do assunto deve ser informado na exclusão.");
+                        .GreaterThan(0).WithMessage("Código do assunto deve ser informado na exclusão.");
                     break;
 
             }

@@ -10,5 +10,11 @@ namespace BibliotecaApp.Aplication.Dtos
     {
         public int LivroCodl { get; set; }
         public int AutorCodAu { get; set; }
+
+        #region Relacionamentos
+        public LivroResponseDto Livro { get; set; }
+        public AutorResponseDto Autor { get; set; }
+        #endregion
+
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BibliotecaApp.Domain.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,5 +11,10 @@ namespace BibliotecaApp.Aplication.Dtos
     {
         public int LivroCodl { get; set; }
         public int AssuntoCodAs { get; set; }
+
+        #region Relacionamentos
+        public LivroResponseDto Livro { get; set; }
+        public AssuntoResponseDto Assunto { get; set; }
+        #endregion
     }
 }

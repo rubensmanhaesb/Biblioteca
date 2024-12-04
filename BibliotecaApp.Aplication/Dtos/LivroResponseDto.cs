@@ -13,5 +13,23 @@ namespace BibliotecaApp.Aplication.Dtos
         public string? Editora { get; set; }
         public int? Edicao { get; set; }
         public string? AnoPublicacao { get; set; }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is LivroResponseDto other)
+            {
+                return Codl == other.Codl &&
+                       Titulo == other.Titulo &&
+                       Editora == other.Editora &&
+                       Edicao == other.Edicao &&
+                       AnoPublicacao == other.AnoPublicacao;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Codl, Titulo, Editora, Edicao, AnoPublicacao);
+        }
     }
 }

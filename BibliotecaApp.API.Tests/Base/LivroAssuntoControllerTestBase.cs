@@ -50,6 +50,8 @@ namespace BibliotecaApp.API.Tests.Tests
 
                     // AutoMapper e Validators
                     services.AddAutoMapper(cfg => cfg.AddProfile<LivroAssuntoMapping>());
+                    services.AddAutoMapper(cfg => cfg.AddProfile<LivroMapping>());
+                    services.AddAutoMapper(cfg => cfg.AddProfile<AssuntoMapping>());
                     services.AddControllers().AddApplicationPart(typeof(LivroAssuntoController).Assembly);
                     services.AddValidatorsFromAssemblyContaining<LivroAssuntoDto>();
                 })

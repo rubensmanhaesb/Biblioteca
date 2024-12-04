@@ -47,6 +47,8 @@ namespace BibliotecaApp.API.Tests.Validations
             result.Should().NotBeNull();
             result.LivroCodl.Should().Be(livro.Codl);
             result.AutorCodAu.Should().Be(autor.CodAu);
+            result.Livro.Should().Be(livro);
+            result.Autor.Should().Be(autor);
         }
 
         [Fact(DisplayName = "Adicionar LivroAutor deve falhar quando Livro não existir")]
@@ -91,6 +93,14 @@ namespace BibliotecaApp.API.Tests.Validations
             var pk = new LivroAutorDto { LivroCodl = livro.Codl, AutorCodAu = autor.CodAu };
             var response = await _testBase.DeleteLivroAutorAsync(pk);
             response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var result = await response.Content.ReadFromJsonAsync<LivroAutorResponseDto>();
+            result.Should().NotBeNull();
+            result.LivroCodl.Should().Be(livro.Codl);
+            result.AutorCodAu.Should().Be(autor.CodAu);
+            result.Livro.Should().Be(livro);
+            result.Autor.Should().Be(autor);
+
         }
 
         [Fact(DisplayName = "Excluir LivroAutor com falha")]

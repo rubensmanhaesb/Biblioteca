@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BibliotecaApp.Domain.Interfaces.Repositories
 {
-    public interface ILivroAssuntoRepository : IBaseRepository<LivroAssunto, LivroAssuntoPk>
+    public interface ILivroAssuntoRepository : IBaseRepository<LivroAssunto, LivroAssuntoPk>, IBaseQueryRepository<LivroAssunto>
     {
     }
 }

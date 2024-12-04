@@ -37,8 +37,9 @@ namespace BibliotecaApp.Aplication.Services
         public async Task<LivroAutorResponseDto> DeleteAsync(LivroAutorDto dto)
         {
             var livroAutor = _mapper.Map<LivroAutor>(dto);
+            var response = await _livroAutorDomain.GetByIdAsync(livroAutor.Pk);
             await _livroAutorDomain.DeleteAsync(livroAutor);
-            var responseDto = _mapper.Map<LivroAutorResponseDto>(livroAutor);
+            var responseDto = _mapper.Map<LivroAutorResponseDto>(response);
 
             return responseDto;
         }

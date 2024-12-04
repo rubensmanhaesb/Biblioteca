@@ -4,6 +4,7 @@ using BibliotecaApp.Domain.Interfaces.Repositories;
 using BibliotecaApp.Domain.Interfaces.Services;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace BibliotecaApp.Domain.Services
@@ -85,5 +86,43 @@ namespace BibliotecaApp.Domain.Services
             if (!validationResult.IsValid)
                 throw new ValidationException(validationResult.Errors);
         }
+
+        public async override Task<List<LivroAutor>>? GetAllAsync()
+        {
+            return (List<LivroAutor>)await _livroAutorRepository.GetByConditionAsync(
+                pageSize: 10,
+                pageNumber: 1,
+                predicate: null,
+                orderBy: null,
+                isAscending: true,
+                includes: new Expression<Func<LivroAutor, object>>[]
+                {
+                    la => la.Livro,
+                    la => la.Autor
+                },
+                cancellationToken: default);
+        }
+
+        public async override Task<LivroAutor>? GetByIdAsync(LivroAutorPk id)
+        {
+            var result = await _livroAutorRepository.GetByConditionAsync(
+                pageSize: 10,
+                pageNumber: 1,
+                predicate:
+                    la => la.LivroCodl == id.LivroCodl &&
+                    la.AutorCodAu == id.AutorCodAu
+                ,
+                orderBy: null,
+                isAscending: true,
+                includes: new Expression<Func<LivroAutor, object>>[]
+                {
+                    la => la.Livro,
+                    la => la.Autor
+                },
+                cancellationToken: default);
+
+            return result.FirstOrDefault();
+        }
+
     }
 }

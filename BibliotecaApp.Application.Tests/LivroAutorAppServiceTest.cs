@@ -50,14 +50,22 @@ namespace BibliotecaApp.Aplication.Test.Services
                 .Generate();
         }
 
-        [Fact(DisplayName = "Adicionar LivroAutor com sucesso")]
-        public async Task AddAsync_ShouldAddLivroAutor_WhenValid()
+        private async Task<(LivroAutorDto, LivroAutorResponseDto)> ExecuteAddLivroAutorRoutineAsync()
         {
             // Arrange
             var livroAutorDto = GenerateLivroAutorDto();
-            var livroAutor = GenerateLivroAutor();
-            var livroAutorResponseDto = GenerateLivroAutorResponseDto();
+            var livroAutor = new LivroAutor
+            {
+                LivroCodl = livroAutorDto.LivroCodl,
+                AutorCodAu = livroAutorDto.AutorCodAu
+            };
+            var livroAutorResponseDto = new LivroAutorResponseDto
+            {
+                LivroCodl = livroAutor.LivroCodl,
+                AutorCodAu = livroAutor.AutorCodAu
+            };
 
+            // Configurar os mocks
             _mapperMock.Setup(m => m.Map<LivroAutor>(livroAutorDto)).Returns(livroAutor);
             _livroAutorDomainServiceMock.Setup(s => s.AddAsync(livroAutor));
             _mapperMock.Setup(m => m.Map<LivroAutorResponseDto>(livroAutor)).Returns(livroAutorResponseDto);
@@ -65,8 +73,16 @@ namespace BibliotecaApp.Aplication.Test.Services
             // Act
             var result = await _livroAutorAppService.AddAsync(livroAutorDto);
 
-            // Assert
-            result.Should().BeEquivalentTo(livroAutorResponseDto);
+            return (livroAutorDto, result);
+        }
+
+        [Fact(DisplayName = "Adicionar LivroAutor com sucesso")]
+        public async Task AddAsync_ShouldAddLivroAutor_WhenValid()
+        {
+            var (livroAutorDto, result) = await ExecuteAddLivroAutorRoutineAsync();
+
+
+            result.Should().BeEquivalentTo(livroAutorDto);
         }
 
         [Fact(DisplayName = "Adicionar LivroAutor deve falhar quando dados são inválidos")]
@@ -125,20 +141,39 @@ namespace BibliotecaApp.Aplication.Test.Services
         [Fact(DisplayName = "Excluir LivroAutor com sucesso")]
         public async Task DeleteAsync_ShouldDeleteLivroAutor_WhenLivroAutorExists()
         {
-            // Arrange
-            var livroAutorDto = GenerateLivroAutorDto();
-            var livroAutor = GenerateLivroAutor();
-            var livroAutorResponseDto = GenerateLivroAutorResponseDto();
+            // Arrange: Inclui um LivroAutor para teste de exclusão
+            var (livroAutorDto, livroAutorResponseDto) = await ExecuteAddLivroAutorRoutineAsync();
 
-            _mapperMock.Setup(m => m.Map<LivroAutor>(livroAutorDto)).Returns(livroAutor);
-            _livroAutorDomainServiceMock.Setup(s => s.DeleteAsync(livroAutor));
+            var livroAutor = new LivroAutor
+            {
+                LivroCodl = livroAutorDto.LivroCodl,
+                AutorCodAu = livroAutorDto.AutorCodAu
+            };
+
+            // Configurar o mock para GetByIdAsync
+            _livroAutorDomainServiceMock
+                .Setup(s => s.GetByIdAsync(It.Is<LivroAutorPk>(pk =>
+                    pk.LivroCodl == livroAutorDto.LivroCodl &&
+                    pk.AutorCodAu == livroAutorDto.AutorCodAu)))
+                .ReturnsAsync(livroAutor);
+
+            // Configurar o mock para DeleteAsync
+            _livroAutorDomainServiceMock.Setup(s => s.DeleteAsync(It.IsAny<LivroAutor>()));
+
+            // Configurar o mapeamento para o DTO de resposta
             _mapperMock.Setup(m => m.Map<LivroAutorResponseDto>(livroAutor)).Returns(livroAutorResponseDto);
 
-            // Act
+            // Act: Executa o método de exclusão
             var result = await _livroAutorAppService.DeleteAsync(livroAutorDto);
 
             // Assert
             result.Should().BeEquivalentTo(livroAutorResponseDto);
+
+            // Verificar que GetByIdAsync foi chamado corretamente
+            _livroAutorDomainServiceMock.Verify(s => s.GetByIdAsync(It.IsAny<LivroAutorPk>()), Times.Once);
+
+            // Verificar que DeleteAsync foi chamado
+            _livroAutorDomainServiceMock.Verify(s => s.DeleteAsync(It.IsAny<LivroAutor>()), Times.Once);
         }
 
         [Fact(DisplayName = "Excluir LivroAutor deve falhar quando não encontrado")]

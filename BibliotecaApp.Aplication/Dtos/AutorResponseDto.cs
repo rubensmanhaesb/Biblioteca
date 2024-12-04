@@ -10,6 +10,21 @@ namespace BibliotecaApp.Aplication.Dtos
     {
         public int CodAu { get; set; }
         public string? Nome { get; set; }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is AutorResponseDto other)
+            {
+                return CodAu == other.CodAu &&
+                       string.Equals(Nome, other.Nome, StringComparison.Ordinal);
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(CodAu, Nome);
+        }
     }
 
 
